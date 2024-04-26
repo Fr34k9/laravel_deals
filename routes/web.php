@@ -2,6 +2,7 @@
 
 use App\Crawlers\Blick;
 use App\Crawlers\Daydeal;
+use App\Crawlers\Qoqa;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -17,5 +18,10 @@ Route::get('crawl/{id}', function ($id) {
         new Daydeal();
     } else if( $id == 2 ) {
         new Blick();
+    } else if( $id == 3 ) {
+        new Qoqa();
+    }
+    else {
+        dd('Invalid ID');
     }
 });

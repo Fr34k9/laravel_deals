@@ -59,13 +59,12 @@ abstract class BaseCrawler
         return '';
     }
 
-    private function clean_price($string)
+    public function clean_price($string)
     {
         // convert 1&#039;599.–to 1599.00
         $string = str_replace('&#039;', '', $string);
 
         $string = str_replace('\'', '', $string);
-        $string = str_replace(' ', '', $string);
         $string = str_replace('CHF', '', $string);
 
         $int = floatval( $string );

@@ -25,7 +25,9 @@
         </h4>
         <div class="mt-4">
             <div class="relative w-full bg-gray-200 rounded-full">
-                <div class="h-2 bg-blue-500 rounded-full" style="width: {{ $deal->products_left / $deal->products_total * 100 }}%"></div>
+                @if( $deal->products_total > 0)
+                    <div class="h-2 bg-blue-500 rounded-full" style="width: {{ $deal->products_left / $deal->products_total * 100 }}%"></div>
+                @endif
             </div>
         </div>
     </div>
