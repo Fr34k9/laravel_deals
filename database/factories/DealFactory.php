@@ -19,10 +19,12 @@ class DealFactory extends Factory
         $products_total = $this->faker->randomNumber(2);
         $products_left = $this->faker->numberBetween(0, $products_total);
 
+        $platform_id = PlatformFactory::new()->create()->id;
+
         return [
-            'platform_id' => PlatformFactory::class,
-            'title' => $this->faker->name,
-            'subtitle' => $this->faker->name,
+            'platform_id' => $platform_id,
+            'title' => $this->faker->words($this->faker->numberBetween(1,5), true),
+            'subtitle' => $this->faker->words($this->faker->numberBetween(1,5), true),
             'price' => $this->faker->randomFloat(2, 0, 100),
             'else_price' => $this->faker->randomFloat(2, 0, 100),
             'products_total' => $products_total,
