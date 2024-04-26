@@ -46,6 +46,7 @@ abstract class BaseCrawler
                 $tmp['products_left'] = $this->clean_product_count_left($deal['products_left']);
                 $tmp['image'] = $this->image_prefix() . $this->clean($deal['image']);
                 $tmp['url'] = $url;
+                $tmp['updated_at'] = now();
                 $res[$url][] = $tmp;
             }
         }
@@ -91,6 +92,7 @@ abstract class BaseCrawler
                     ['title' => $deal['title']],
                     $deal
                 );
+                echo "Updated";
             }
         }
     }
