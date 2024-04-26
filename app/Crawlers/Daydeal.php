@@ -33,41 +33,4 @@ class Daydeal extends BaseCrawler
         $deals = $this->crawlDeals();
         $this->store($deals);
     }
-
-    public function crawlDeals()
-    {
-        $deals = [];
-        foreach ($this->config->urls as $url) {
-            $body = $this->crawl($url);
-
-            if( $this->config->multiple_products ) {
-                $deals[] = $this->crawlMultipleDeals($body, $this->config);
-            } else {
-                $deals[] = $this->crawlOneDeal($body);
-            }
-            sleep(1);
-        }
-
-        return $deals;
-    }
-
-
-    private function crawlMultipleDeals($html, $config)
-    {
-        $each_deal_regex = '/<div class="product-item[^>]*>(.*?)<\/div>/is';
-        preg_match_all($each_deal_regex, $html, $matches);
-
-        $deals = [];
-        foreach ($matches[1] as $deal) {
-            $deals[] = [
-                'title' => $this->searchRegex($deal, '/<h2 class="product-title">(.+?)<\/h2>/s'),
-                'price' => $this->searchRegex($deal, '/<span class="price">(.+?)<\/span>/s'),
-                'image' => $this->searchRegex($deal, '/<img src="(.+?)"/s'),
-            ];
-        }
-
-        return $deals;
-    }
-
-
 }
