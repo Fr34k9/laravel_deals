@@ -85,15 +85,18 @@ abstract class BaseCrawler
     protected function store( $urls ) {
         $urls = $this->prepare_store( $urls );
 
+        $response = [];
         foreach( $urls as $deals ) {
             foreach( $deals as $deal ) {
                 Deal::updateOrCreate(
                     ['title' => $deal['title']],
                     $deal
                 );
-                echo "Updated";
+                $response[] = $deal['title'] . ' ' . $deal['subtitle'] . ' - ' . $deal['price'];
             }
         }
+
+        echo "Updated " . implode(",", $response);
     }
 
     protected function searchRegex($string, $regex)
