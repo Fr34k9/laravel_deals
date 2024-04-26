@@ -25,7 +25,7 @@ class Daydeal extends BaseCrawler
                 'products_total' => '',
                 'products_left' => '/<div class="ProgressBar ProductMain-ProgressBar">.*?<span class="ProgressBar-TextValue">(\d+)\</s',
                 'image' => '/class="ProductMain-Image" *src="([^"]*)" /s',
-                'invalid' => ''
+                'invalid' => '/(<div class="ProgressBar-Text">Ausverkauft<\/div>)/s',
             ]
         ];
 
