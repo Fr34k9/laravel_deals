@@ -12,3 +12,19 @@ Show current active deals
 
 ## Install
 Easy installation using docker compose up
+
+## Work local
+- npm run dev
+- php artisan schedule:work
+- php artisan queue:work
+
+# Whats used in this project
+## Laravel
+- Routes
+- Queues
+- Jobs
+
+## Livewire
+
+## Alpine
+## Tailwind
