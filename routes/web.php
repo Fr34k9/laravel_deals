@@ -5,6 +5,7 @@ use App\Crawlers\Daydeal;
 use App\Crawlers\Digitec;
 use App\Crawlers\Galaxus;
 use App\Crawlers\Qoqa;
+use App\Models\Platform;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,23 +21,26 @@ Route::get('crawl', function () {
 });
 
 Route::get('crawl/{crawler}', function ($crawler) {
+    if( is_numeric($crawler) ) {
+        $platform = Platform::find($crawler);
+        if (!$platform) {
+            dd('Invalid ID');
+        }
+        $crawler = $platform->name;
+    }
     $crawler = 'App\Crawlers\\' . ucfirst($crawler);
     new $crawler();
 });
 
 Route::get('crawl/by-id/{id}', function ($id) {
-    if ($id == 1) {
-        new Daydeal();
-    } else if( $id == 2 ) {
-        new Blick();
-    } else if( $id == 3 ) {
-        new Qoqa();
-    } else if( $id == 4 ) {
-        new Digitec();
-    } else if( $id == 5 ) {
-        new Galaxus();
-    }
-    else {
+    $platform = Platform::find($id);
+    if (!$platform) {
         dd('Invalid ID');
     }
+
+    $crawler = 'App\Crawlers\\' . ucfirst($platform->name);
+    if(!class_exists($crawler)) {
+        dd('Crawler not found');
+    }
+    new $crawler();
 });

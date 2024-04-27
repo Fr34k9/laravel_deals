@@ -21,6 +21,9 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);*/
 
-        Deal::factory(5)->create();
+        //Deal::factory(5)->create();
+        $this->call([
+            PlatformSeeder::class,
+        ]);
     }
 }
