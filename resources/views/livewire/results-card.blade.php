@@ -1,9 +1,9 @@
-<div class="relative p-5 transition-all bg-white cursor-pointer rounded-2xl hover:-translate-y-2">
+<div class="relative p-5 transition-all bg-white cursor-default group rounded-2xl hover:-translate-y-2">
     <a href="{{ $deal->url }}" target="_blank"
         class="absolute flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full cursor-pointer top-4 right-4">
         <img src="{{ $deal->platforms->image }}" alt="{{ $deal->platforms->name }}" class="w-6 h-6 p-1" />
     </a>
-    <div class="absolute flex items-center justify-center px-2 bg-gray-100 rounded-full -top-3">
+    <div class="absolute items-center justify-center hidden px-2 bg-gray-100 rounded-full group-hover:flex -top-3">
         {{ $deal->created_at->diffForHumans() }}
     </div>
     <div class="w-11/12 h-[310px] md:h-[230px] overflow-hidden mx-auto aspect-w-16 aspect-h-8 md:mb-2 mb-4">

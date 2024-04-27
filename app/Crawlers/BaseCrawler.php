@@ -37,7 +37,9 @@ abstract class BaseCrawler
                 if( isset( $deal['invalid'] ) && !empty( $deal['invalid'] ) ) continue;
                 if( isset( $deal['valid'] ) && empty( $deal['valid'] ) ) continue;
 
-                $tmp['platform_id'] = $this->config->id;
+                $deal_url = isset( $deal['url']) && filter_var($deal['url'], FILTER_VALIDATE_URL) ? $deal['url'] : $url;
+
+                $tmp['platforms_id'] = $this->config->id;
                 $tmp['title'] = $this->clean($deal['title']);
                 $tmp['subtitle'] = $this->clean($deal['subtitle']);
                 $tmp['price'] = $this->clean_price($deal['price']);
@@ -45,7 +47,7 @@ abstract class BaseCrawler
                 $tmp['products_total'] = $this->clean_product_count_total($deal['products_total']);
                 $tmp['products_left'] = $this->clean_product_count_left($deal['products_left']);
                 $tmp['image'] = $this->image_prefix() . $this->clean($deal['image']);
-                $tmp['url'] = $url;
+                $tmp['url'] = $deal_url;
                 $tmp['updated_at'] = now();
                 $res[$url][] = $tmp;
             }

@@ -34,7 +34,7 @@ class ResultList extends Component
         }
 
         if ($this->filter_by_platform) {
-            $deals = $deals->where('platform_id', $this->filter_by_platform);
+            $deals = $deals->where('platforms_id', $this->filter_by_platform);
         }
 
         $deals = $deals->get();
