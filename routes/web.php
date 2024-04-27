@@ -1,10 +1,5 @@
 <?php
 
-use App\Crawlers\Blick;
-use App\Crawlers\Daydeal;
-use App\Crawlers\Digitec;
-use App\Crawlers\Galaxus;
-use App\Crawlers\Qoqa;
 use App\Models\Platform;
 use Illuminate\Support\Facades\Route;
 
@@ -13,11 +8,15 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('crawl', function () {
-    new Daydeal();
-    new Blick();
-    new Qoqa();
-    new Digitec();
-    new Galaxus();
+    $platforms = Platform::all();
+    foreach($platforms as $platform) {
+        $crawler = 'App\Crawlers\\' . ucfirst($platform->name);
+        if(!class_exists($crawler)) {
+            continue;
+        }
+        new $crawler();
+    }
+    return 'Crawling done';
 });
 
 Route::get('crawl/{crawler}', function ($crawler) {
@@ -28,17 +27,8 @@ Route::get('crawl/{crawler}', function ($crawler) {
         }
         $crawler = $platform->name;
     }
+
     $crawler = 'App\Crawlers\\' . ucfirst($crawler);
-    new $crawler();
-});
-
-Route::get('crawl/by-id/{id}', function ($id) {
-    $platform = Platform::find($id);
-    if (!$platform) {
-        dd('Invalid ID');
-    }
-
-    $crawler = 'App\Crawlers\\' . ucfirst($platform->name);
     if(!class_exists($crawler)) {
         dd('Crawler not found');
     }
