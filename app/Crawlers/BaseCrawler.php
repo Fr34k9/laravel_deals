@@ -36,7 +36,7 @@ abstract class BaseCrawler
             return [];
         }
 
-        if( !empty( env('PROXY_URL') ) && !empty( env('PROXY_AUTH') ) ) {
+        if( !empty( env('PROXY_URL') ) ) {
             return [
                 'proxy' => env('PROXY_URL'),
             ];

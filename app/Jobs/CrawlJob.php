@@ -40,5 +40,6 @@ class CrawlJob implements ShouldQueue
 
         Log::info('Job for Crawler ' . $crawler . ' started');
         new $crawler_class();
+        Log::info('Job for Crawler ' . $crawler . ' finished');
     }
 }

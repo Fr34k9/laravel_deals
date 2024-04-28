@@ -37,6 +37,8 @@ class Qoqa extends BaseCrawler
 
         $deals = [];
         foreach($categories as $category){
+            if(!isset($category->offers) || empty($category->offers)) continue;
+
             foreach($category->offers as $offer ) {
                 $deal = [];
                 $deal['title'] = $offer->title;
