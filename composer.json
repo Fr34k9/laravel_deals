@@ -8,8 +8,7 @@
         "php": "^8.2",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
-        "livewire/livewire": "^3.4",
-        "spatie/crawler": "^8.2"
+        "livewire/livewire": "^3.4"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.0",
