@@ -32,14 +32,13 @@ abstract class BaseCrawler
 
     private function use_proxy()
     {
-        if( !$this->config->use_proxy ) {
+        if( isset($this->config->use_proxy) && !$this->config->use_proxy ) {
             return [];
         }
 
         if( !empty( env('PROXY_URL') ) && !empty( env('PROXY_AUTH') ) ) {
             return [
                 'proxy' => env('PROXY_URL'),
-                'proxy_auth' => [env('PROXY_AUTH')]
             ];
         }
         return [];
