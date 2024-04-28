@@ -6,5 +6,5 @@ use Illuminate\Support\Facades\Schedule;
 
 $platforms = Platform::where('active', true)->get();
 foreach ($platforms as $platform) {
-    Schedule::job(new CrawlJob($platform))->everyMinute();
+    Schedule::job(new CrawlJob($platform))->everyFiveMinutes();
 }

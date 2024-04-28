@@ -19,13 +19,30 @@ abstract class BaseCrawler
 
     protected function crawl($url, $return = 'body')
     {
-        $response = $this->client->request('GET', $url);
+        $options = $this->use_proxy();
+
+        $response = $this->client->request('GET', $url, $options);
         $content = $response->getBody()->getContents();
         if ($return == 'body') {
             return \Str::between($content, '<body>', '</body>');
         }
 
         return $response->getBody()->getContents();
+    }
+
+    private function use_proxy()
+    {
+        if( !$this->config->use_proxy ) {
+            return [];
+        }
+
+        if( !empty( env('PROXY_URL') ) && !empty( env('PROXY_AUTH') ) ) {
+            return [
+                'proxy' => env('PROXY_URL'),
+                'proxy_auth' => [env('PROXY_AUTH')]
+            ];
+        }
+        return [];
     }
 
     protected function prepare_store($urls)
