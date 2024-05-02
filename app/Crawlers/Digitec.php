@@ -29,6 +29,7 @@ class Digitec extends BaseCrawler
 
         $datas = $this->mergeArrayByProductId($apolloState);
 
+        $deals = [];
         foreach( $datas as $data ) {
             $products_left = intval($data['salesInformation']['numberOfItems']) - intval($data['salesInformation']['numberOfItemsSold']);
             if( $products_left <= 0 ) continue;
@@ -68,19 +69,5 @@ class Digitec extends BaseCrawler
         }
 
         return $mergedArray;
-    }
-
-    public function clean_price($price)
-    {
-        $price = str_replace('’', '', $price);
-        $price = str_replace('.-', '', $price);
-
-        // Convert "Ab 52.– bis 169.-" to 169.00
-        if (strpos($price, 'bis') !== false) {
-            $price = explode('bis', $price)[1];
-        }
-
-        $price = floatval($price);
-        return $price;
     }
 }
