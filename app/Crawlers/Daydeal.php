@@ -11,6 +11,10 @@ class Daydeal extends BaseCrawler
             'https://www.daydeal.ch/de/',
             'https://www.daydeal.ch/de/category/it-multimedia',
             'https://www.daydeal.ch/de/category/haushalt-wohnen',
+            'https://www.daydeal.ch/de/category/supermarkt-drogerie',
+            'https://www.daydeal.ch/de/category/familie-baby',
+            'https://www.daydeal.ch/de/category/baumarkt-hobby',
+            'https://www.daydeal.ch/de/category/sport-freizeit'
         ];
 
         $config =  [
