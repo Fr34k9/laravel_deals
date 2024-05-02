@@ -7,6 +7,11 @@
             </span>
             <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-500 dark:text-gray-400 sm:mt-0">
                 <li>
+                    @if(!empty(env('GITHUB_REPO_URL')))
+                        <a href="{{ env('GITHUB_REPO_URL') }}" class="hover:underline me-6" target="_blank" >GitHub</a>
+                    @endif
+                </li>
+                <li>
                     <button x-on:click="$dispatch('openModal', {title: 'test1', body: 'test2'})" class="hover:underline">Über</button>
                 </li>
             </ul>

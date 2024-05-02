@@ -28,9 +28,11 @@
                     @endforeach
                 </ul>
             </p>
-            <p class="mt-3">
-                <a class="mt-3" href="github" target="_blank">More details here..</a>
-            </p>
+            @if( !empty(env('GITHUB_REPO_URL')) )
+                <p class="mt-3">Find more details here:
+                    <a class="mt-3" href="{{ env('GITHUB_REPO_URL') }}" target="_blank">GitHub</a>
+                </p>
+            @endif
         </div>
     </div>
 </div>
