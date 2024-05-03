@@ -8,17 +8,20 @@ use Livewire\Component;
 
 class ResultList extends Component
 {
-    private $filter_by_platform;
+    private $filter_by_platform = false;
+    private $filter_by_platform_name = '';
 
     #[On('filterByPlatform')]
     public function filterByPlatform($platformId)
     {
         if($platformId === 0) {
             $this->filter_by_platform = false;
+            $this->filter_by_platform_name = '';
             return;
         }
 
         $this->filter_by_platform = $platformId;
+        $this->filter_by_platform_name = Deal::find($platformId)->platforms->name;
     }
 
     public function render()

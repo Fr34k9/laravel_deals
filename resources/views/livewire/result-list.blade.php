@@ -2,6 +2,13 @@
     @forelse ($deals as $deal)
         <livewire:results-card wire:key="{{ $deal->id }}" :deal="$deal" />
     @empty
-        <div class="text-lg text-gray-800">No deals found</div>
+        @if( !empty($this->filter_by_platform) )
+            <div class="text-lg text-gray-800">No deals found for {{ $this->filter_by_platform_name }}</div>
+        @else
+            <div>
+                <div class="text-lg text-gray-800">No deals found.</div>
+                <div class="text-sm text-gray-800">This might be an error, please check the platforms by yourself.</div>
+            </div>
+        @endif
     @endforelse
 </div>
