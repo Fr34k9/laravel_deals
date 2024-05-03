@@ -15,11 +15,14 @@
     @vite('resources/css/app.css')
 </head>
 
-<body class="font-[sans-serif] antialiased bg-gray-100">
+<body x-cloak class="font-[sans-serif] antialiased bg-gray-100 dark:bg-gray-800" x-data="{darkMode: $persist(false)}" :class="{'dark': darkMode === true }">
     <div class="p-4 mx-auto lg:max-w-full sm:max-w-full">
-        <h2 class="mb-3 text-4xl font-extrabold text-gray-800">
-            <a href="{{ route('home') }}" wire:navigate>Deals</a>
-        </h2>
+        <div class="flex justify-between mb-3 ">
+            <h2 class="text-4xl font-extrabold text-gray-800 dark:text-white">
+                <a href="{{ route('home') }}" wire:navigate>Deals</a>
+            </h2>
+            <livewire:theme-toggle />
+        </div>
         <livewire:result-filters />
         <livewire:result-list />
         <livewire:footer />

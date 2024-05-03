@@ -1,4 +1,4 @@
-<div class="relative p-5 transition-all bg-white cursor-default group rounded-2xl hover:-translate-y-2 hover:-rotate-1">
+<div class="relative p-5 transition-all bg-white cursor-default dark:bg-gray-700 group rounded-2xl hover:-translate-y-2 hover:-rotate-1">
     <div class="absolute items-center justify-center hidden px-2 bg-gray-100 rounded-full group-hover:flex -top-3">
         {{ $deal->created_at->diffForHumans() }}
     </div>
@@ -14,15 +14,15 @@
         </div>
 
         <div class="mb-2">
-            <h3 class="text-lg font-extrabold text-gray-800 line-clamp-2">{{ htmlspecialchars_decode($deal->title) }}</h3>
-            <p class="mt-2 text-sm text-gray-600 line-clamp-3">{{ $deal->subtitle }}</p>
+            <h3 class="text-lg font-extrabold text-gray-800 line-clamp-2 dark:text-white">{{ htmlspecialchars_decode($deal->title) }}</h3>
+            <p class="mt-2 text-sm text-gray-600 line-clamp-3 dark:text-white">{{ $deal->subtitle }}</p>
         </div>
 
         <div class="mt-auto">
             <h4>
-                <span class="text-lg font-bold text-gray-800">{{ $deal->price }}.-</span>
+                <span class="text-lg font-bold text-gray-800 dark:text-white">{{ $deal->price }}.-</span>
                 @if (!empty($deal->else_price) && $deal->else_price > $deal->price)
-                    <span class="ml-2 text-sm text-gray-600 line-through">{{ $deal->else_price }}.-</span>
+                    <span class="ml-2 text-sm text-gray-600 line-through dark:text-white">{{ $deal->else_price }}.-</span>
                 @endif
             </h4>
             <div class="mt-2">
