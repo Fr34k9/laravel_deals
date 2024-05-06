@@ -1,5 +1,5 @@
 <div>
-    <footer class="mt-3 bg-white rounded-lg dark:bg-gray-800">
+    <footer class="mt-3 bg-white rounded-lg dark:bg-gray-700">
         <div class="w-full p-4 mx-auto md:flex md:items-center md:justify-between">
             <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">
                 Made with ♥
