@@ -17,8 +17,13 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
+        $user_count = User::count();
+        if ($user_count > 0) {
+            return redirect(route('home', absolute: false));
+        }
+
         return view('auth.register');
     }
 
@@ -45,6 +50,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('home', absolute: false));
     }
 }
