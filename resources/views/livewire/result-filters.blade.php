@@ -1,7 +1,7 @@
 <div class="mb-6">
     <div class="border-b border-gray-200">
         <nav class="flex gap-4 -mb-px" aria-label="Tabs">
-            <button href="#" wire:click="filterByPlatform(0)"
+            <button wire:click="filterByPlatform(0)"
                 class="inline-flex items-center gap-2 px-1 pb-2 text-sm font-medium text-gray-500 border-b-2 border-transparent shrink-0 hover:border-blue-500 hover:text-black focus:border-blue-500">
                 <svg class="w-8 h-8 text-gray-800 md:w-6 md:h-6 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                     width="24" height="24" fill="currentColor" viewBox="0 0 24 24">

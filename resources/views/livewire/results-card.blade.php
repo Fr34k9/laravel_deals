@@ -1,4 +1,5 @@
-<div class="relative p-5 transition-all bg-white cursor-default dark:bg-gray-700 group rounded-2xl hover:-translate-y-2 hover:-rotate-1">
+<div
+    class="relative p-5 transition-all bg-white cursor-default dark:bg-gray-700 group rounded-2xl hover:-translate-y-2 hover:-rotate-1 @if ($deal->invalid) blur-sm hover:filter-none @endif">
     <div class="absolute items-center justify-center hidden px-2 bg-gray-100 rounded-full group-hover:flex -top-3">
         {{ $deal->created_at->diffForHumans() }}
     </div>
@@ -14,7 +15,9 @@
         </div>
 
         <div class="mb-2">
-            <h3 class="text-lg font-extrabold text-gray-800 line-clamp-2 dark:text-white">{{ htmlspecialchars_decode($deal->title) }}</h3>
+            <h3 class="text-lg font-extrabold text-gray-800 line-clamp-2 dark:text-white">
+                {{ htmlspecialchars_decode($deal->title) }}
+            </h3>
             <p class="mt-2 text-sm text-gray-600 line-clamp-3 dark:text-white">{{ $deal->subtitle }}</p>
         </div>
 
@@ -22,7 +25,9 @@
             <h4>
                 <span class="text-lg font-bold text-gray-800 dark:text-white">{{ $deal->price }}.-</span>
                 @if (!empty($deal->else_price) && $deal->else_price > $deal->price)
-                    <span class="ml-2 text-sm text-gray-600 line-through dark:text-white">{{ $deal->else_price }}.-</span>
+                    <span class="ml-2 text-sm text-gray-600 line-through dark:text-white">
+                        {{ $deal->else_price }}.-
+                    </span>
                 @endif
             </h4>
             <div class="mt-2">
@@ -35,4 +40,17 @@
             </div>
         </div>
     </div>
+
+    @can('update', $deal)
+        <button wire:click="toggleDealVisibility"
+            class="absolute items-center justify-center hidden px-2 bg-gray-100 rounded-full cursor-pointer -bottom-3 right-4 group-hover:flex">
+            @if ($deal->invalid)
+                <img src="{{ asset('storage/icons/eye-close.svg') }}" alt="Hide deal"
+                    class="w-6 h-6 text-gray-800 dark:text-white" />
+            @else
+                <img src="{{ asset('storage/icons/eye-open.svg') }}" alt="Show deal"
+                    class="w-6 h-6 text-gray-800 dark:text-white" />
+            @endif
+        </button>
+    @endcan
 </div>

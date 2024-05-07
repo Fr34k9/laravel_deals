@@ -37,7 +37,7 @@ class DealPolicy
      */
     public function update(User $user, Deal $deal): bool
     {
-        //
+        return true;
     }
 
     /**
