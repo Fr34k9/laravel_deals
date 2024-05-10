@@ -36,11 +36,11 @@ class Galaxus extends BaseCrawler
             $deal = [];
             $deal['identifier'] = $data['productId'];
             $deal['title'] = $data['brandName'] . ' ' . $data['name'];
-            $deal['subtitle'] = $data['nameProperties'];
-            $deal['price'] = $data['price']['amountInclusive'];
-            $deal['else_price'] = $data['insteadOfPrice']['price']['amountInclusive'];
-            $deal['products_total'] = $data['salesInformation']['numberOfItems'];
-            $deal['products_left'] = $products_left;
+            $deal['subtitle'] = $data['nameProperties'] ?? '';
+            $deal['price'] = $data['price']['amountInclusive'] ?? 0;
+            $deal['else_price'] = $data['insteadOfPrice']['price']['amountInclusive'] ?? 0;
+            $deal['products_total'] = $data['salesInformation']['numberOfItems'] ?? 100;
+            $deal['products_left'] = $products_left ?? 100;
             $deal['image'] = $data['images'][0]['url'];
             $deal['url'] = "https://www.digitec.ch/de/s1/product/" . $data['productId'];
             $deals[] = $deal;
