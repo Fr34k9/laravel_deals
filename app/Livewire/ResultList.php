@@ -32,6 +32,10 @@ class ResultList extends Component
             $deals = $deals->where('platforms_id', $this->platform->id);
         }
 
+        if( auth()->guest() ) {
+            $deals = $deals->where('invalid', false);
+        }
+
         $deals = $deals->get();
 
         return view('livewire.result-list', compact('deals'));
