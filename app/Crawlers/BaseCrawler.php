@@ -3,16 +3,24 @@
 namespace App\Crawlers;
 use App\Models\Deal;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\App;
 
 abstract class BaseCrawler
 {
     protected $client;
     public $config;
+    private $debug = false;
 
     public function __construct($config = null)
     {
         $this->client = new Client();
         $this->config = (object) $config;
+
+        if( App::runningInConsole() ) {
+            $this->debug = false;
+        } else {
+            $this->debug = true;
+        }
     }
 
     // abstract public function crawlDeals();
@@ -37,6 +45,7 @@ abstract class BaseCrawler
         }
 
         if( !empty( env('PROXY_URL') ) ) {
+            if( $this->debug ) echo "Using proxy<br>";
             return [
                 'proxy' => env('PROXY_URL'),
             ];
@@ -103,18 +112,16 @@ abstract class BaseCrawler
     protected function store( $urls ) {
         $urls = $this->prepare_store( $urls );
 
-        $response = [];
         foreach( $urls as $deals ) {
             foreach( $deals as $deal ) {
                 Deal::updateOrCreate(
                     ['title' => $deal['title']],
                     $deal
                 );
-                $response[] = $deal['title'] . ' ' . $deal['subtitle'] . ' - ' . $deal['price'];
+
+                if( $this->debug ) "<pre>" . print_r($deal) . "</pre>";
             }
         }
-
-        echo "Updated " . implode(",", $response);
     }
 
     protected function searchRegex($string, $regex)
@@ -134,6 +141,7 @@ abstract class BaseCrawler
     {
         $deals = [];
         foreach ($this->config->urls as $url) {
+            if( $this->debug ) echo "Crawling " . $url . "<br>";
             $body = $this->crawl($url);
 
             if( $this->config->multiple_products ) {
