@@ -2,4 +2,4 @@
 
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('crawl:start')->everyFiveMinutes();
+Schedule::command('crawl:start')->everyTwoMinutes();
