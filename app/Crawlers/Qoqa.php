@@ -38,6 +38,7 @@ class Qoqa extends BaseCrawler
         $deals = [];
         foreach($categories as $category){
             if(!isset($category->offers) || empty($category->offers)) continue;
+            if(strpos($category->website_tracking_id, 'qwine') !== false) continue;
 
             foreach($category->offers as $offer ) {
                 $deal = [];
