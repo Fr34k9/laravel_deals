@@ -40,6 +40,11 @@ php artisan scheduler:work
 php artisan serve
 ```
 
+## Commands
+```bash
+php artisan crawl:start {platform?}
+```
+
 ## Created with
 <!-- Check https://github.com/alexandresanlim/Badges4-README.md-Profile -->
 ![Laravel](https://img.shields.io/badge/laravel-%23FF2D20.svg?style=for-the-badge&logo=laravel&logoColor=white)
