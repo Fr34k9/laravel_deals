@@ -19,9 +19,13 @@
     :class="{ 'dark': darkMode === true }">
     <div class="p-4 mx-auto lg:max-w-full sm:max-w-full">
         <div class="flex justify-between mb-3 ">
-            <h2 class="text-4xl font-extrabold text-gray-800 dark:text-white">
-                <a href="{{ route('home') }}" wire:navigate>Deals</a>
-            </h2>
+            <a href="{{ route('home') }}" wire:navigate class="flex items-center justify-center">
+                <img src="{{ asset('images/logo.png') }}" alt="Deals" class="inline w-8 h-8">
+
+                <h2 class="ml-2 text-4xl font-extrabold text-gray-800 dark:text-white">
+                    Deals
+                </h2>
+            </a>
             <div class="flex items-center">
                 @auth
                     <span class="flex items-center justify-center mr-2 text-sm">
