@@ -3,22 +3,22 @@
 namespace App\Livewire;
 
 use App\Models\Deal;
+use App\Models\Platform;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ResultList extends Component
 {
-    private $filter_by_platform;
+    private Platform $platform;
 
     #[On('filterByPlatform')]
     public function filterByPlatform($platformId)
     {
-        if($platformId === 0) {
-            $this->filter_by_platform = false;
+        if( $platformId < 1 ) {
             return;
         }
 
-        $this->filter_by_platform = $platformId;
+        $this->platform = Platform::find($platformId);
     }
 
     public function render()
@@ -26,10 +26,14 @@ class ResultList extends Component
         $deals = Deal::orderBy('created_at', 'desc')
             ->where('products_left', '>', 0);
 
-        $deals = $deals->where('updated_at', '>=', now()->subMinutes(10));
+        $deals = $deals->where('updated_at', '>=', now()->subMinutes(5));
 
-        if ($this->filter_by_platform) {
-            $deals = $deals->where('platforms_id', $this->filter_by_platform);
+        if (!empty($this->platform)) {
+            $deals = $deals->where('platforms_id', $this->platform->id);
+        }
+
+        if( auth()->guest() ) {
+            $deals = $deals->where('invalid', false);
         }
 
         $deals = $deals->get();

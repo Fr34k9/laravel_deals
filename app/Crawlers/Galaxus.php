@@ -28,6 +28,7 @@ class Galaxus extends BaseCrawler
 
         $datas = $this->mergeArrayByProductId($apolloState);
 
+        $deals = [];
         foreach( $datas as $data ) {
             $products_left = intval($data['salesInformation']['numberOfItems']) - intval($data['salesInformation']['numberOfItemsSold']);
             if( $products_left <= 0 ) continue;
@@ -35,11 +36,11 @@ class Galaxus extends BaseCrawler
             $deal = [];
             $deal['identifier'] = $data['productId'];
             $deal['title'] = $data['brandName'] . ' ' . $data['name'];
-            $deal['subtitle'] = $data['nameProperties'];
-            $deal['price'] = $data['price']['amountInclusive'];
-            $deal['else_price'] = $data['insteadOfPrice']['price']['amountInclusive'];
-            $deal['products_total'] = $data['salesInformation']['numberOfItems'];
-            $deal['products_left'] = $products_left;
+            $deal['subtitle'] = $data['nameProperties'] ?? '';
+            $deal['price'] = $data['price']['amountInclusive'] ?? 0;
+            $deal['else_price'] = $data['insteadOfPrice']['price']['amountInclusive'] ?? 0;
+            $deal['products_total'] = $data['salesInformation']['numberOfItems'] ?? 100;
+            $deal['products_left'] = $products_left ?? 100;
             $deal['image'] = $data['images'][0]['url'];
             $deal['url'] = "https://www.digitec.ch/de/s1/product/" . $data['productId'];
             $deals[] = $deal;
@@ -67,19 +68,5 @@ class Galaxus extends BaseCrawler
         }
 
         return $mergedArray;
-    }
-
-    public function clean_price($price)
-    {
-        $price = str_replace('’', '', $price);
-        $price = str_replace('.-', '', $price);
-
-        // Convert "Ab 52.– bis 169.-" to 169.00
-        if (strpos($price, 'bis') !== false) {
-            $price = explode('bis', $price)[1];
-        }
-
-        $price = floatval($price);
-        return $price;
     }
 }
