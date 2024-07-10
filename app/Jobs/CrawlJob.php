@@ -39,7 +39,15 @@ class CrawlJob implements ShouldQueue
         }
 
         Log::info('Job for Crawler ' . $crawler . ' started');
-        new $crawler_class();
+        try {
+            new $crawler_class();
+        } catch (\Exception $e) {
+            Log::error('Error in Crawler ' . $crawler . ': ' . $e->getMessage());
+        }
+
+        $this->platform->last_crawled = now();
+        $this->platform->save();
+
         Log::info('Job for Crawler ' . $crawler . ' finished');
     }
 }
