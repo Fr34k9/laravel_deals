@@ -9,6 +9,11 @@ class Platform extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'active' => 'boolean',
+        'last_crawled' => 'datetime',
+    ];
+
     public function deals()
     {
         return $this->hasMany(Deal::class);

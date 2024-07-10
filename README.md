@@ -45,6 +45,10 @@ php artisan serve
 php artisan crawl:start {platform?}
 ```
 
+## Test a crawler
+Currently there are no tests available because it could be that there are no offers on these websites.
+To test a crawler you can also call ```/crawl/{crawler_name}``` or ```/crawl/{crawler_id}``` to debug.
+
 ## Created with
 <!-- Check https://github.com/alexandresanlim/Badges4-README.md-Profile -->
 ![Laravel](https://img.shields.io/badge/laravel-%23FF2D20.svg?style=for-the-badge&logo=laravel&logoColor=white)

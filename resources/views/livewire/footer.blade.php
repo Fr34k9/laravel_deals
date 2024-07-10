@@ -15,7 +15,7 @@
                     @endif
                 </li>
                 <li>
-                    <button x-on:click="$dispatch('openModal', {title: 'test1', body: 'test2'})" class="hover:underline">Über</button>
+                    <button x-on:click="$dispatch('openModal')" class="hover:underline">About</button>
                 </li>
             </ul>
         </div>

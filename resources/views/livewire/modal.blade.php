@@ -4,7 +4,7 @@
         tabindex="-1">
         <div class="flex items-center justify-between px-4 py-3 border-b dark:border-neutral-700">
             <h3 class="font-bold dark:text-white">
-                Aktuelle Plattformen
+                Current platforms
             </h3>
             <button type="button" @click="isOpen = false"
                 class="flex items-center justify-center text-sm font-semibold text-gray-800 border border-transparent rounded-full size-7 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-neutral-700">
@@ -17,22 +17,27 @@
             </button>
         </div>
         <div class="p-4">
-            <p class="text-gray-800 dark:text-neutral-400">
+            <div class="flex flex-col text-white dark:text-neutral-400">
                 <ul class="">
                     @foreach ($platforms as $platform)
-                        <li>
-                            <a href="{{ $platform->url }}" class="hover:underline">
-                                <img class="inline w-4 h-4 m-1" src="{{ $platform->image }}" /> {{ $platform->name }}
-                            </a>
-                        </li>
+                        <div class="flex flex-col mb-3">
+                            <div>
+                                <a href="{{ $platform->url }}" class="hover:underline">
+                                    <img class="inline w-4 h-4 m-1" src="{{ $platform->image }}" />
+                                    {{ $platform->name }}
+                                </a>
+                            </div>
+                            <div>
+                                @if($platform->last_crawled)
+                                    {{ __('Last crawled') }}: {{ $platform->last_crawled->diffForHumans() }}
+                                @else
+                                    {{ __('Not crawled yet') }}
+                                @endif
+                            </div>
+                        </div>
                     @endforeach
                 </ul>
-            </p>
-            @if( !empty(env('GITHUB_REPO_URL')) )
-                <p class="mt-3">Find more details here:
-                    <a class="mt-3" href="{{ env('GITHUB_REPO_URL') }}" target="_blank">GitHub</a>
-                </p>
-            @endif
+            </div>
         </div>
     </div>
 </div>
