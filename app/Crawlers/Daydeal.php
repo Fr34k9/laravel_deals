@@ -27,7 +27,7 @@ class Daydeal extends BaseCrawler
                 'price' => '/<div class="Price ProductMain-Price".*?<div class=\"Price-Price\">(\d+\.?\d+)\.?.?\<?/s',
                 'else_price' => '/<div class="Price ProductMain-Price".*?<div class="Price-OldPriceValue">(\d+\.?\d+)\.?.?\<?/s',
                 'products_total' => '',
-                'products_left' => '/<div class="ProgressBar ProductMain-ProgressBar">.*?<span class="ProgressBar-TextValue">(\d+)\</s',
+                'products_left' => '/<div class="ProgressBar-PercentageFill".*?<span class="ProgressBar-TextValue">(\d+)\</s',
                 'image' => '/class="ProductMain-Image" *src="([^"]*)" /s',
                 'invalid' => '/(<div class="ProgressBar-Text">Ausverkauft<\/div>)/s',
             ]
