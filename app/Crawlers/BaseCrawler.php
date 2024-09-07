@@ -114,10 +114,17 @@ abstract class BaseCrawler
 
         foreach( $urls as $deals ) {
             foreach( $deals as $deal ) {
-                Deal::updateOrCreate(
-                    ['title' => $deal['title']],
-                    $deal
-                );
+                // Check if a deal with the same title already exists updated within the last day. If yes, update it, otherwise create a new one.
+                $existing_deal = Deal::where('title', $deal['title'])
+                    ->where('updated_at', '>', now()->subDay())
+                    ->first();
+
+                if( $existing_deal ) {
+                    $existing_deal->update($deal);
+                } else {
+                    Deal::create($deal);
+                }
+                
 
                 if( $this->debug ) "<pre>" . print_r($deal) . "</pre>";
             }
