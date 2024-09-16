@@ -26,6 +26,7 @@ Route::middleware('auth')->group(function () {
             $crawler = $platform->name;
         }
 
+        $crawler = str_replace('20min', 'twentymin', $crawler);
         $crawler = 'App\Crawlers\\' . ucfirst($crawler);
         if(!class_exists($crawler)) {
             dd('Crawler not found');

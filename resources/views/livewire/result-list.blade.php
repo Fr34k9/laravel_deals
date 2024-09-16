@@ -13,7 +13,7 @@
         @endforelse
     </div>
     
-    @if( !empty($this->platform) )
+    @if( !empty($this->platform) && !empty($this->platform->last_crawled) )
         <div class="mt-3 text-sm text-center text-gray-500 dark:text-gray-400">
             Last refresh for {{ $this->platform->name }}: {{ $this->platform->last_crawled->diffForHumans() }}
         </div>

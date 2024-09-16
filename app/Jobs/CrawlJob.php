@@ -33,6 +33,7 @@ class CrawlJob implements ShouldQueue
             throw new \Exception('Crawler not found');
         }
 
+        $crawler = str_replace('20min', 'twentymin', $crawler);
         $crawler_class = 'App\Crawlers\\' . ucfirst($crawler);
         if(!class_exists($crawler_class)) {
             throw new \Exception('Crawler not found');
