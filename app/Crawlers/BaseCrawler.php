@@ -25,17 +25,17 @@ abstract class BaseCrawler
 
     // abstract public function crawlDeals();
 
-    protected function crawl($url, $return = 'body')
+    protected function crawl($url, $headers = [])
     {
         $options = $this->use_proxy();
+        if( !empty($headers) ) {
+            $options['headers'] = $headers;
+        }
 
         $response = $this->client->request('GET', $url, $options);
         $content = $response->getBody()->getContents();
-        if ($return == 'body') {
-            return \Str::between($content, '<body>', '</body>');
-        }
 
-        return $response->getBody()->getContents();
+        return \Str::between($content, '<body>', '</body>');
     }
 
     private function use_proxy()
@@ -149,7 +149,8 @@ abstract class BaseCrawler
         $deals = [];
         foreach ($this->config->urls as $url) {
             if( $this->debug ) echo "Crawling " . $url . "<br>";
-            $body = $this->crawl($url);
+            $headers = $this->config->headers ?? [];
+            $body = $this->crawl($url, $headers);
 
             if( $this->config->multiple_products ) {
                 $deals[$url] = $this->crawlMultipleDeals($body);

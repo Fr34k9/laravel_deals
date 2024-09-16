@@ -18,10 +18,12 @@ class PlatformSeeder extends Seeder
             ['name' => 'Qoqa', 'url' => 'https://www.qoqa.ch', 'image' => 'https://www.qoqa.ch/favicon.ico'],
             ['name' => 'Digitec', 'url' => 'https://www.digitec.ch', 'image' => 'https://www.digitec.ch/favicon.ico'],
             ['name' => 'Galaxus', 'url' => 'https://www.galaxus.ch', 'image' => 'https://www.galaxus.ch/favicon.ico'],
+            ['name' => '20min', 'url' => 'https://myshop.20min.ch/api/proxy/shop/deals', 'image' => 'https://www.20min.ch/favicon.ico'],
         ];
 
         foreach ($platforms as $platform) {
-            Platform::create($platform);
+            Platform::where('name', $platform['name'])->first() ?: 
+                Platform::create($platform);
         }
     }
 }
