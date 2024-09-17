@@ -42,7 +42,7 @@ class Twentymin extends BaseCrawler
             $deal['products_total'] = 100;
             $deal['products_left'] = $element['remainingStockPercent'] ?? 100;
             $deal['image'] = $element['coverPhotoPath'] ?? '';
-            $deal['url'] = 'https://myshop.20min.ch/' . $element['forthLink'];
+            $deal['url'] = 'https://myshop.20min.ch' . $element['forthLink'];
             $deal['invalid'] = $element['isSoldOut'] ?? false;
             $deals[] = $deal;
         }
