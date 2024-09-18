@@ -45,7 +45,7 @@ abstract class BaseCrawler
         }
 
         if( !empty( env('PROXY_URL') ) ) {
-            if( $this->debug ) echo "Using proxy<br>";
+            if( $this->debug ) dump("Using proxy");
             return [
                 'proxy' => env('PROXY_URL'),
             ];
@@ -101,12 +101,14 @@ abstract class BaseCrawler
 
     private function clean_product_count_total($string)
     {
-        return preg_replace('/[^0-9]/', '', $string) ? preg_replace('/[^0-9]/', '', $string) : 100;
+        $count = preg_replace('/[^0-9]/', '', $string) ? preg_replace('/[^0-9]/', '', $string) : 100;
+        return intval($count);
     }
 
     private function clean_product_count_left($string)
     {
-        return preg_replace('/[^0-9]/', '', $string) ? preg_replace('/[^0-9]/', '', $string) : 0;
+        $count = preg_replace('/[^0-9]/', '', $string) ? preg_replace('/[^0-9]/', '', $string) : 100;
+        return intval($count);
     }
 
     protected function store( $urls ) {
@@ -120,13 +122,15 @@ abstract class BaseCrawler
                     ->first();
 
                 if( $existing_deal ) {
+                    if( $this->debug ) dump("Updating deal " . $deal['title']);
                     $existing_deal->update($deal);
                 } else {
+                    if( $this->debug ) dump("Creating deal " . $deal['title']);
                     Deal::create($deal);
                 }
                 
 
-                if( $this->debug ) "<pre>" . print_r($deal) . "</pre>";
+                if( $this->debug ) dump($deal);
             }
         }
     }
@@ -148,7 +152,7 @@ abstract class BaseCrawler
     {
         $deals = [];
         foreach ($this->config->urls as $url) {
-            if( $this->debug ) echo "Crawling " . $url . "<br>";
+            if( $this->debug ) dump("Crawling " . $url);
             $headers = $this->config->headers ?? [];
             $body = $this->crawl($url, $headers);
 

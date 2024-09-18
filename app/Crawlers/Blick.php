@@ -22,6 +22,7 @@ class Blick extends BaseCrawler implements CrawlableInterface
                 'products_total' => '',
                 'products_left' => '/dealstripe__amount"*>([^<\%]*)\%?<\/span>/s',
                 'image' => '/--deal-cover:url\(([^\)]*)\)\;\"/s',
+                'url' => '/deal__link--overlay" href="([^"]*)" target/s',
                 'invalid' => '/(<h2> ?Aktuell gibt es hier keinen Deal<\/h2>)/s',
                 'valid' => '/(<span class="visually-hidden">Brack ch<\/span>)/s'
             ]
