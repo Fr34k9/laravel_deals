@@ -21,7 +21,7 @@ class Blick extends BaseCrawler implements CrawlableInterface
                 'else_price' => '/data-dealregularprice>CHF ([^<]*)<\/span>/s',
                 'products_total' => '',
                 'products_left' => '/dealstripe__amount"*>([^<\%]*)\%?<\/span>/s',
-                'image' => '/--deal-cover:url\(([^\)]*)\)\;\"/s',
+                'image' => '/<source type="image\/webp" srcset="[^,]*, ([^ ]*) 2x" /s',
                 'url' => '/deal__link--overlay" href="([^"]*)" target/s',
                 'invalid' => '/(<h2> ?Aktuell gibt es hier keinen Deal<\/h2>)/s',
                 'valid' => '/(<span class="visually-hidden">Brack ch<\/span>)/s'
@@ -31,5 +31,10 @@ class Blick extends BaseCrawler implements CrawlableInterface
         parent::__construct($config);
         $deals = $this->crawlDeals();
         $this->store($deals);
+    }
+
+    public function image_prefix()
+    {
+        return 'https://box.blick.ch';
     }
 }
