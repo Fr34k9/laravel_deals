@@ -107,7 +107,10 @@ abstract class BaseCrawler
 
     private function clean_product_count_left($string)
     {
+        if( $string === '0' ) return 0;
+
         $count = preg_replace('/[^0-9]/', '', $string) ? preg_replace('/[^0-9]/', '', $string) : 100;
+
         return intval($count);
     }
 

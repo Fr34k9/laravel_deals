@@ -15,16 +15,6 @@ class Qoqa extends BaseCrawler
             'id' => 3,
             'urls' => $urls,
             'multiple_products' => true, // if the page has multiple products
-            'regex' => [
-                'title' => '/<h1 class="ProductMain-Title">([^<]*)<\/h1>/s',
-                'subtitle' => '/<h2 class="ProductMain-Subtitle">([^<]*)<\/h2>/s',
-                'price' => '/<div class="Price ProductMain-Price".*?<div class=\"Price-Price\">(\d+\.?\d+)\.?.?\<?/s',
-                'else_price' => '/<div class="Price ProductMain-Price".*?<div class="Price-OldPriceValue">(\d+\.?\d+)\.?.?\<?/s',
-                'products_total' => '',
-                'products_left' => '/<div class="ProgressBar ProductMain-ProgressBar">.*?<span class="ProgressBar-TextValue">(\d+)\</s',
-                'image' => '/class="ProductMain-Image" *src="([^"]*)" /s',
-                'invalid' => '/(<div class="ProgressBar-Text">Ausverkauft<\/div>)/s',
-            ]
         ];
 
         parent::__construct($config);
