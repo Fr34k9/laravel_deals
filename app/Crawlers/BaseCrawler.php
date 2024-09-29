@@ -59,7 +59,6 @@ abstract class BaseCrawler
         foreach($urls as $url => $deals) {
             foreach( $deals as $deal ) {
                 $tmp = [];
-                if( isset( $deal['invalid'] ) && !empty( $deal['invalid'] ) ) continue;
                 if( isset( $deal['valid'] ) && empty( $deal['valid'] ) ) continue;
 
                 $deal_url = isset( $deal['url']) && filter_var($deal['url'], FILTER_VALIDATE_URL) ? $deal['url'] : $url;
@@ -74,6 +73,7 @@ abstract class BaseCrawler
                 $tmp['image'] = $this->image_prefix() . $this->clean($deal['image']);
                 $tmp['url'] = $deal_url;
                 $tmp['updated_at'] = now();
+                $tmp['invalid'] = !empty( $deal['invalid'] ) ? true : false;
                 $res[$url][] = $tmp;
             }
         }
