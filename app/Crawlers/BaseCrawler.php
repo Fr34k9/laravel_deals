@@ -60,6 +60,7 @@ abstract class BaseCrawler
             foreach( $deals as $deal ) {
                 $tmp = [];
                 if( isset( $deal['valid'] ) && empty( $deal['valid'] ) ) continue;
+                if( isset( $deal['invalid'] ) && !empty( $deal['invalid'] ) ) $deal['products_left'] = 0;
 
                 $deal_url = isset( $deal['url']) && filter_var($deal['url'], FILTER_VALIDATE_URL) ? $deal['url'] : $url;
 
@@ -73,7 +74,6 @@ abstract class BaseCrawler
                 $tmp['image'] = $this->image_prefix() . $this->clean($deal['image']);
                 $tmp['url'] = $deal_url;
                 $tmp['updated_at'] = now();
-                $tmp['invalid'] = !empty( $deal['invalid'] ) ? true : false;
                 $res[$url][] = $tmp;
             }
         }
@@ -107,7 +107,7 @@ abstract class BaseCrawler
 
     private function clean_product_count_left($string)
     {
-        if( $string === '0' ) return 0;
+        if( $string === '0' || $string === 0 ) return 0;
 
         $count = preg_replace('/[^0-9]/', '', $string) ? preg_replace('/[^0-9]/', '', $string) : 100;
 
