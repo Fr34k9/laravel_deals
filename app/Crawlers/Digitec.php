@@ -11,7 +11,7 @@ class Digitec extends BaseCrawler
             'https://www.digitec.ch/de/daily-deal',
         ];
 
-        $config =  [
+        $config = [
             'id' => 4,
             'urls' => $urls,
             'multiple_products' => true, // if the page has multiple products
@@ -22,17 +22,23 @@ class Digitec extends BaseCrawler
         $this->store($deals);
     }
 
-    public function crawlMultipleDeals($html){
-        $json = \Str::between($html, '<script id="__NEXT_DATA__" type="application/json">', '</script>');
+    public function crawlMultipleDeals($html)
+    {
+        preg_match('/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s', $html, $matches);
+        $json = $matches[1] ?? null;
+        if (!$json)
+            return [];
+
         $categories = json_decode($json, true);
         $apolloState = $categories['props']['apolloState'];
 
         $datas = $this->mergeArrayByProductId($apolloState);
 
         $deals = [];
-        foreach( $datas as $data ) {
+        foreach ($datas as $data) {
             $products_left = intval($data['salesInformation']['numberOfItems']) - intval($data['salesInformation']['numberOfItemsSold']);
-            if( $products_left <= 0 ) continue;
+            if ($products_left <= 0)
+                continue;
 
             $deal = [];
             $deal['identifier'] = $data['productId'];
@@ -56,7 +62,8 @@ class Digitec extends BaseCrawler
 
         // Iterate through the original array
         foreach ($originalArray as $item) {
-            if( empty( $item['productId'] ) ) continue;
+            if (empty($item['productId']))
+                continue;
             $productId = $item['productId'];
 
             // If the productId is already present in the merged array, merge the arrays
