@@ -6,7 +6,8 @@
 
     <a href="{{ $deal->url }}" target="_blank"
         class="absolute flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full cursor-pointer top-4 right-4">
-        <img src="{{ $deal->platforms->image }}" alt="{{ $deal->platforms->name }}" class="w-6 h-6 p-1" />
+        <img src="{{ asset('platforms/' . $deal->platforms->name . '.png') }}" alt="{{ $deal->platforms->name }}"
+            class="w-6 h-6 p-1" />
     </a>
 
     <div class="flex flex-col h-full">
@@ -45,15 +46,13 @@
         <button wire:click="toggleDealVisibility"
             class="absolute items-center justify-center hidden px-2 bg-gray-100 rounded-full cursor-pointer -bottom-3 right-4 group-hover:flex">
             @if ($deal->invalid)
-                <svg class="w-6 h-6 text-gray-800" fill="none" aria-hidden="true"
-                    viewBox="0 0 24 24">
+                <svg class="w-6 h-6 text-gray-800" fill="none" aria-hidden="true" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-width="2"
                         d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" />
                     <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                 </svg>
             @else
-                <svg class="w-6 h-6 text-gray-800" aria-hidden="true"
-                    viewBox="0 0 24 24">
+                <svg class="w-6 h-6 text-gray-800" aria-hidden="true" viewBox="0 0 24 24">
                     <path
                         d="m4 15.6 3.055-3.056A4.913 4.913 0 0 1 7 12.012a5.006 5.006 0 0 1 5-5c.178.009.356.027.532.054l1.744-1.744A8.973 8.973 0 0 0 12 5.012c-5.388 0-10 5.336-10 7A6.49 6.49 0 0 0 4 15.6Z" />
                     <path
