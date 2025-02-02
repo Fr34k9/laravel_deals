@@ -23,7 +23,7 @@ class Galaxus extends BaseCrawler
 
     public function crawlMultipleDeals($html)
     {
-        preg_match('/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s', $html, $matches);
+        preg_match('/<script id="__NEXT_DATA__" type="application\/json" [^>]*>(.*?)<\/script>/s', $html, $matches);
         $json = $matches[1] ?? null;
         if (!$json)
             return [];
