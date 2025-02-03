@@ -16,7 +16,7 @@ abstract class BaseCrawler
         $this->client = new Client();
         $this->config = (object) $config;
 
-        if( App::runningInConsole() ) {
+        if (App::runningInConsole()) {
             $this->debug = false;
         } else {
             $this->debug = true;
@@ -28,7 +28,7 @@ abstract class BaseCrawler
     protected function crawl($url, $headers = [])
     {
         $options = $this->use_proxy();
-        if( !empty($headers) ) {
+        if (!empty($headers)) {
             $options['headers'] = $headers;
         }
 
@@ -40,12 +40,13 @@ abstract class BaseCrawler
 
     private function use_proxy()
     {
-        if( isset($this->config->use_proxy) && !$this->config->use_proxy ) {
+        if (isset($this->config->use_proxy) && !$this->config->use_proxy) {
             return [];
         }
 
-        if( !empty( env('PROXY_URL') ) ) {
-            if( $this->debug ) dump("Using proxy");
+        if (!empty(env('PROXY_URL'))) {
+            if ($this->debug)
+                dump("Using proxy");
             return [
                 'proxy' => env('PROXY_URL'),
             ];
@@ -56,13 +57,15 @@ abstract class BaseCrawler
     protected function prepare_store($urls)
     {
         $res = [];
-        foreach($urls as $url => $deals) {
-            foreach( $deals as $deal ) {
+        foreach ($urls as $url => $deals) {
+            foreach ($deals as $deal) {
                 $tmp = [];
-                if( isset( $deal['valid'] ) && empty( $deal['valid'] ) ) continue;
-                if( isset( $deal['invalid'] ) && !empty( $deal['invalid'] ) ) $deal['products_left'] = 0;
+                if (isset($deal['valid']) && empty($deal['valid']))
+                    continue;
+                if (isset($deal['invalid']) && !empty($deal['invalid']))
+                    $deal['products_left'] = 0;
 
-                $deal_url = isset( $deal['url']) && filter_var($deal['url'], FILTER_VALIDATE_URL) ? $deal['url'] : $url;
+                $deal_url = isset($deal['url']) && filter_var($deal['url'], FILTER_VALIDATE_URL) ? $deal['url'] : $url;
 
                 $tmp['platforms_id'] = $this->config->id;
                 $tmp['title'] = $this->clean($deal['title']);
@@ -94,7 +97,7 @@ abstract class BaseCrawler
         $string = str_replace('\'', '', $string);
         $string = str_replace('CHF', '', $string);
 
-        $int = floatval( $string );
+        $int = floatval($string);
 
         return $int;
     }
@@ -107,40 +110,46 @@ abstract class BaseCrawler
 
     private function clean_product_count_left($string)
     {
-        if( $string === '0' || $string === 0 ) return 0;
+        if ($string === '0' || $string === 0)
+            return 0;
 
         $count = preg_replace('/[^0-9]/', '', $string) ? preg_replace('/[^0-9]/', '', $string) : 100;
 
         return intval($count);
     }
 
-    protected function store( $urls ) {
-        $urls = $this->prepare_store( $urls );
+    protected function store($urls)
+    {
+        $urls = $this->prepare_store($urls);
 
-        foreach( $urls as $deals ) {
-            foreach( $deals as $deal ) {
+        foreach ($urls as $deals) {
+            foreach ($deals as $deal) {
                 $existing_deal = Deal::where('title', $deal['title'])
                     ->where('updated_at', '>', now()->subDay())
                     ->where('platforms_id', $deal['platforms_id'])
                     ->first();
 
-                if( $existing_deal ) {
-                    if( $this->debug ) dump("Updating deal " . $deal['title']);
+                if ($existing_deal) {
+                    if ($this->debug)
+                        dump("Updating deal " . $deal['title']);
                     $existing_deal->update($deal);
                 } else {
-                    if( $this->debug ) dump("Creating deal " . $deal['title']);
+                    if ($this->debug)
+                        dump("Creating deal " . $deal['title']);
                     Deal::create($deal);
                 }
-                
 
-                if( $this->debug ) dump($deal);
+
+                if ($this->debug)
+                    dump($deal);
             }
         }
     }
 
     protected function searchRegex($string, $regex)
     {
-        if( empty($regex) ) return false;
+        if (empty($regex))
+            return false;
 
         preg_match($regex, $string, $matches);
         return $matches[1] ?? false;
@@ -155,11 +164,12 @@ abstract class BaseCrawler
     {
         $deals = [];
         foreach ($this->config->urls as $url) {
-            if( $this->debug ) dump("Crawling " . $url);
+            if ($this->debug)
+                dump("Crawling " . $url);
             $headers = $this->config->headers ?? [];
             $body = $this->crawl($url, $headers);
 
-            if( $this->config->multiple_products ) {
+            if ($this->config->multiple_products) {
                 $deals[$url] = $this->crawlMultipleDeals($body);
             } else {
                 $deals[$url] = $this->crawlOneDeal($body);
@@ -175,7 +185,7 @@ abstract class BaseCrawler
     {
         $deals = [];
         $deal = [];
-        foreach($this->config->regex as $key => $regex) {
+        foreach ($this->config->regex as $key => $regex) {
             $deal[$key] = $this->searchRegex($html, $regex);
         }
         $deals[] = $deal;
@@ -190,7 +200,7 @@ abstract class BaseCrawler
         $deals = [];
         foreach ($matches[1] as $deal_html) {
             $deal = [];
-            foreach($this->config->regex as $key => $regex) {
+            foreach ($this->config->regex as $key => $regex) {
                 $deal[$key] = $this->searchRegex($deal_html, $regex);
             }
             $deals[] = $deal;
