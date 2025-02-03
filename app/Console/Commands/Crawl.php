@@ -63,8 +63,8 @@ class Crawl extends Command
 
     private function startAllCrawlers()
     {
-        $platforms = Platform::all();
-        foreach($platforms as $platform) {
+        $platforms = Platform::where('active', true)->get();
+        foreach ($platforms as $platform) {
             CrawlJob::dispatch($platform);
         }
     }

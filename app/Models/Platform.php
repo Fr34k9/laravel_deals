@@ -9,6 +9,10 @@ class Platform extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'active',
+    ];
+
     protected $casts = [
         'active' => 'boolean',
         'last_crawled' => 'datetime',
