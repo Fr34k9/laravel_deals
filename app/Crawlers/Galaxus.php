@@ -28,52 +28,29 @@ class Galaxus extends BaseCrawler
         if (!$json)
             return [];
 
-        $categories = json_decode($json, true);
-        $apolloState = $categories['props']['apolloState'];
-
-        $datas = $this->mergeArrayByProductId($apolloState);
+        $response = json_decode($json, true);
+        $datas = $response['props']['pageProps']['preloadedQuery']['response']['data']['dailyDealProducts'];
 
         $deals = [];
         foreach ($datas as $data) {
+            $data = $data['product'];
             $products_left = intval($data['salesInformation']['numberOfItems']) - intval($data['salesInformation']['numberOfItemsSold']);
             if ($products_left <= 0)
                 continue;
 
             $deal = [];
-            $deal['identifier'] = $data['productId'];
-            $deal['title'] = $data['brandName'] . ' ' . $data['name'];
-            $deal['subtitle'] = $data['nameProperties'] ?? '';
+            $deal['identifier'] = $data['databaseId'];
+            $deal['title'] = $data['brand']['name'] . ' ' . $data['name'];
+            $deal['subtitle'] = $data['nameExtensions']['properties'] ?? '';
             $deal['price'] = $data['price']['amountInclusive'] ?? 0;
             $deal['else_price'] = $data['insteadOfPrice']['price']['amountInclusive'] ?? 0;
             $deal['products_total'] = $data['salesInformation']['numberOfItems'] ?? 100;
             $deal['products_left'] = $products_left ?? 100;
-            $deal['image'] = $data['images'][0]['url'];
-            $deal['url'] = "https://www.digitec.ch/de/s1/product/" . $data['productId'];
+            $deal['image'] = 'https://static01.galaxus.com/' . $data['previewImages']['nodes'][0]['relativeUrl'] . '_720.avif';
+            $deal['url'] = "https://www.galaxus.ch/" . $data['relativeUrl'];
             $deals[] = $deal;
         }
 
         return $deals;
-    }
-
-    private function mergeArrayByProductId(array $originalArray): array
-    {
-        $mergedArray = [];
-
-        // Iterate through the original array
-        foreach ($originalArray as $item) {
-            if (empty($item['productId']))
-                continue;
-            $productId = $item['productId'];
-
-            // If the productId is already present in the merged array, merge the arrays
-            if (array_key_exists($productId, $mergedArray)) {
-                $mergedArray[$productId] = array_merge($mergedArray[$productId], $item);
-            } else {
-                // If the productId is not present, simply add the item to the merged array
-                $mergedArray[$productId] = $item;
-            }
-        }
-
-        return $mergedArray;
     }
 }
