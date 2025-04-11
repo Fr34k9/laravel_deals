@@ -30,7 +30,7 @@ class Digitec extends BaseCrawler
             return [];
 
         $response = json_decode($json, true);
-        $datas = $response['props']['pageProps']['preloadedQuery']['response']['data']['dailyDealProducts'];
+        $datas = $response['props']['pageProps']['preloadedQuery']['rawResponse']['data']['dailyDealProducts'];
 
         $deals = [];
         foreach ($datas as $data) {
