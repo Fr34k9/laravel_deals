@@ -10,7 +10,7 @@ class Blick extends BaseCrawler implements CrawlableInterface
             'https://box.blick.ch/deals',
         ];
 
-        $config =  [
+        $config = [
             'id' => 2,
             'urls' => $urls,
             'multiple_products' => '/<li class="deals__item[^>]*>(.*?)<\/li>/is', // if the page has multiple products
@@ -24,7 +24,7 @@ class Blick extends BaseCrawler implements CrawlableInterface
                 'image' => '/<source type="image\/webp" srcset="[^,]*, ([^ ]*) 2x" /s',
                 'url' => '/deal__link--overlay" href="([^"]*)" target/s',
                 'invalid' => '/(<h2> ?Aktuell gibt es hier keinen Deal<\/h2>)/s',
-                'valid' => '/(<span class="visually-hidden">Brack ch<\/span>)/s'
+                'valid' => '/(<span class="visually-hidden">Brack Logo rot transparent RGB<\/span>)/s'
             ]
         ];
 

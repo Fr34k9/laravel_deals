@@ -120,7 +120,11 @@ abstract class BaseCrawler
 
     protected function store($urls)
     {
+        if ($this->debug)
+            dump("Data before preparing", $urls);
         $urls = $this->prepare_store($urls);
+        if ($this->debug)
+            dump("Data before storing", $urls);
 
         foreach ($urls as $deals) {
             foreach ($deals as $deal) {
