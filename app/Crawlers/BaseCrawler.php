@@ -218,7 +218,7 @@ abstract class BaseCrawler
 
     private function sendDiscordMessage($deal)
     {
-        if (empty(env('DISCORD_WEBHOOK_URL'))) {
+        if (empty(env('DISCORD_ALERT_WEBHOOK'))) {
             return;
         }
 
@@ -249,5 +249,6 @@ abstract class BaseCrawler
                 ],
             ]
         ]);
+        die();
     }
 }
