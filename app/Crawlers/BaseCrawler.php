@@ -143,30 +143,7 @@ abstract class BaseCrawler
                         dump("Creating deal " . $deal['title']);
                     $new_deal = Deal::create($deal);
                     if ($new_deal) {
-                        $discordPriceString = "**" . $deal['price'] . ".-** ";
-                        if (!empty($deal['products_left']) && $deal['else_price'] > 0) {
-                            $discordPriceString .= " / ~~" . $deal['else_price'] . ".-~~";
-                        }
-
-                        $discordImage = null;
-                        if (!empty($deal['image'])) {
-                            $discordImage = [
-                                'url' => $deal['image']
-                            ];
-                        }
-
-                        DiscordAlert::message("", [
-                            [
-                                'title' => $deal['subtitle'],
-                                'description' => $discordPriceString,
-                                "image" => $discordImage,
-                                'color' => '#00FF00',
-                                'author' => [
-                                    'name' => $deal['title'],
-                                    'url' => env('APP_URL', "https://deals.fr34k.ch/"),
-                                ],
-                            ]
-                        ]);
+                        $this->sendDiscordMessage($new_deal);
                     }
                 }
 
@@ -237,5 +214,40 @@ abstract class BaseCrawler
         }
 
         return $deals;
+    }
+
+    private function sendDiscordMessage($deal)
+    {
+        if (empty(env('DISCORD_WEBHOOK_URL'))) {
+            return;
+        }
+
+        if ($this->debug)
+            dump("Sending Discord message for deal " . $deal['title']);
+
+        $discordPriceString = "**" . $deal['price'] . ".-** ";
+        if (!empty($deal['products_left']) && $deal['else_price'] > 0) {
+            $discordPriceString .= " / ~~" . $deal['else_price'] . ".-~~";
+        }
+
+        $discordImage = null;
+        if (!empty($deal['image'])) {
+            $discordImage = [
+                'url' => $deal['image']
+            ];
+        }
+
+        DiscordAlert::message("", [
+            [
+                'title' => $deal['subtitle'] ?? '',
+                'description' => $discordPriceString,
+                "image" => $discordImage,
+                'color' => rand(0, 1) ? '#ef5350' : '#409fff',
+                'author' => [
+                    'name' => $deal['title'] ?? '',
+                    'url' => env('APP_URL', "https://deals.fr34k.ch/"),
+                ],
+            ]
+        ]);
     }
 }
