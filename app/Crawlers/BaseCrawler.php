@@ -4,6 +4,7 @@ namespace App\Crawlers;
 use App\Models\Deal;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\App;
+use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 abstract class BaseCrawler
 {
@@ -140,9 +141,34 @@ abstract class BaseCrawler
                 } else {
                     if ($this->debug)
                         dump("Creating deal " . $deal['title']);
-                    Deal::create($deal);
-                }
+                    $new_deal = Deal::create($deal);
+                    if ($new_deal) {
+                        $discordPriceString = "**" . $deal['price'] . ".-** ";
+                        if (!empty($deal['products_left']) && $deal['else_price'] > 0) {
+                            $discordPriceString .= " / ~~" . $deal['else_price'] . ".-~~";
+                        }
 
+                        $discordImage = null;
+                        if (!empty($deal['image'])) {
+                            $discordImage = [
+                                'url' => $deal['image']
+                            ];
+                        }
+
+                        DiscordAlert::message("", [
+                            [
+                                'title' => $deal['subtitle'],
+                                'description' => $discordPriceString,
+                                "image" => $discordImage,
+                                'color' => '#00FF00',
+                                'author' => [
+                                    'name' => $deal['title'],
+                                    'url' => env('APP_URL', "https://deals.fr34k.ch/"),
+                                ],
+                            ]
+                        ]);
+                    }
+                }
 
                 if ($this->debug)
                     dump($deal);
