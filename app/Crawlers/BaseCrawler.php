@@ -230,6 +230,8 @@ abstract class BaseCrawler
             $discordPriceString .= " / ~~" . $deal['else_price'] . ".-~~";
         }
 
+        $discordDescription = $discordPriceString . "\n[Alle Deals](" . env('APP_URL', "https://deals.fr34k.ch/") . ")";
+
         $discordImage = null;
         if (!empty($deal['image'])) {
             $discordImage = [
@@ -240,12 +242,12 @@ abstract class BaseCrawler
         DiscordAlert::message("", [
             [
                 'title' => $deal['subtitle'] ?? '',
-                'description' => $discordPriceString,
+                'description' => $discordDescription,
                 "image" => $discordImage,
                 'color' => rand(0, 1) ? '#ef5350' : '#409fff',
                 'author' => [
                     'name' => $deal['title'] ?? '',
-                    'url' => env('APP_URL', "https://deals.fr34k.ch/"),
+                    'url' => $deal['url'] ?? env('APP_URL', "https://deals.fr34k.ch/"),
                 ],
             ]
         ]);

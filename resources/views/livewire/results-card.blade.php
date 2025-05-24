@@ -19,7 +19,7 @@
             <h3 class="text-lg font-extrabold text-gray-800 line-clamp-2 dark:text-white">
                 {{ htmlspecialchars_decode($deal->title) }}
             </h3>
-            <p class="mt-2 text-sm text-gray-600 line-clamp-3 dark:text-white">{{ $deal->subtitle }}</p>
+            <p class="mt-2 text-sm text-gray-600 line-clamp-3 dark:text-white">{{ htmlspecialchars_decode($deal->subtitle) }}</p>
         </div>
 
         <div class="mt-auto">
