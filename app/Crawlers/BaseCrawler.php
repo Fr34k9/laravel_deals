@@ -6,20 +6,17 @@ namespace App\Crawlers;
 
 use App\Contracts\CrawlerInterface;
 use App\Models\Deal;
-use GuzzleHttp\Client;
-use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 abstract class BaseCrawler implements CrawlerInterface
 {
-    protected Client $client;
     public object $config;
     protected bool $debug = false;
 
     public function __construct(?array $config = null)
     {
-        $this->client = new Client();
         $this->config = (object) ($config ?? []);
 
         $this->debug = function_exists('app') && app()->resolved('app') && !app()->runningInConsole();
@@ -32,37 +29,37 @@ abstract class BaseCrawler implements CrawlerInterface
      */
     protected function crawl(string $url, array $headers = []): string
     {
-        $options = $this->use_proxy();
-        if (!empty($headers)) {
-            $options['headers'] = $headers;
+        $request = Http::withHeaders($headers)
+            ->timeout(30)
+            ->connectTimeout(10);
+
+        $proxyUrl = $this->getProxyUrl();
+        if ($proxyUrl) {
+            $request->withOptions(['proxy' => $proxyUrl]);
         }
 
-        $response = $this->client->request('GET', $url, $options);
-        $content = $response->getBody()->getContents();
+        $response = $request->get($url);
+        $content = $response->body();
 
         return Str::between($content, '<body>', '</body>');
     }
 
     /**
-     * @return array<string, mixed>
+     * @return string|null
      */
-    private function use_proxy(): array
+    private function getProxyUrl(): ?string
     {
         if (isset($this->config->use_proxy) && !$this->config->use_proxy) {
-            return [];
+            return null;
         }
 
         $proxyUrl = config('services.proxy.url') ?? env('PROXY_URL');
-        if (!empty($proxyUrl)) {
-            if ($this->debug) {
-                dump("Using proxy");
-            }
-            return [
-                'proxy' => $proxyUrl,
-            ];
+        
+        if (!empty($proxyUrl) && $this->debug) {
+            dump("Using proxy");
         }
 
-        return [];
+        return !empty($proxyUrl) ? $proxyUrl : null;
     }
 
     /**

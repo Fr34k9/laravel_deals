@@ -20,7 +20,7 @@ class CrawlerFactoryTest extends TestCase
      */
     public function test_it_creates_correct_crawler_from_mapping(): void
     {
-        $factory = new CrawlerFactory();
+        $factory = app(CrawlerFactory::class);
         
         $platform = new Platform(['name' => '20min']);
         $crawler = $factory->make($platform);
@@ -37,7 +37,7 @@ class CrawlerFactoryTest extends TestCase
      */
     public function test_it_uses_fallback_resolution(): void
     {
-        $factory = new CrawlerFactory();
+        $factory = app(CrawlerFactory::class);
         
         // This is not in the mapping, but the class App\Crawlers\Daydeal exists
         $platform = new Platform(['name' => 'daydeal']);
@@ -51,7 +51,7 @@ class CrawlerFactoryTest extends TestCase
      */
     public function test_it_throws_exception_for_unknown_platform(): void
     {
-        $factory = new CrawlerFactory();
+        $factory = app(CrawlerFactory::class);
         
         $platform = new Platform(['name' => 'UnknownPlatform']);
         
