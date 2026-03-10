@@ -1,43 +1,51 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use App\Models\Deal;
 use App\Models\Platform;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ResultList extends Component
 {
-    private Platform $platform;
+    /**
+     * The ID of the currently selected platform for filtering.
+     *
+     * @var int|null
+     */
+    public ?int $platformId = null;
 
+    /**
+     * Handle the platform filter event.
+     */
     #[On('filterByPlatform')]
-    public function filterByPlatform($platformId)
+    public function filterByPlatform(int $platformId): void
     {
-        if( $platformId < 1 ) {
-            return;
-        }
-
-        $this->platform = Platform::find($platformId);
+        $this->platformId = $platformId > 0 ? $platformId : null;
     }
 
-    public function render()
+    /**
+     * Render the component.
+     */
+    public function render(): View
     {
-        $deals = Deal::orderBy('created_at', 'desc')
-            ->where('products_left', '>', 0);
+        $dealsQuery = Deal::query()
+            ->with('platform')
+            ->visible()
+            ->inStock()
+            ->recentlyUpdated()
+            ->latest();
 
-        $deals = $deals->where('updated_at', '>=', now()->subMinutes(5));
-
-        if (!empty($this->platform)) {
-            $deals = $deals->where('platforms_id', $this->platform->id);
+        if ($this->platformId) {
+            $dealsQuery->where('platform_id', $this->platformId);
         }
 
-        if( auth()->guest() ) {
-            $deals = $deals->where('invalid', false);
-        }
-
-        $deals = $deals->get();
-
-        return view('livewire.result-list', compact('deals'));
+        return view('livewire.result-list', [
+            'deals' => $dealsQuery->get(),
+        ]);
     }
 }

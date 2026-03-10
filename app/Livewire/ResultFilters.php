@@ -1,21 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use App\Models\Platform;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class ResultFilters extends Component
 {
-    public function filterByPlatform(int $platformId)
+    /**
+     * Dispatch the platform filter event.
+     */
+    public function filterByPlatform(int $platformId): void
     {
         $this->dispatch('filterByPlatform', $platformId);
     }
 
-    public function render()
+    /**
+     * Render the component.
+     */
+    public function render(): View
     {
-        $platforms = Platform::where('active', true)->get();
-
-        return view('livewire.result-filters', compact('platforms'));
+        return view('livewire.result-filters', [
+            'platforms' => Platform::active()->get(),
+        ]);
     }
 }

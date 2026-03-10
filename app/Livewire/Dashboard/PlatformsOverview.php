@@ -1,22 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Dashboard;
 
 use App\Models\Platform;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class PlatformsOverview extends Component
 {
-    public function togglePlatform($platformId)
+    /**
+     * Toggle the active status of a platform.
+     */
+    public function togglePlatform(int $platformId): void
     {
         $platform = Platform::find($platformId);
-        $platform->active = !$platform->active;
-        $platform->save();
+        
+        if ($platform) {
+            $platform->update([
+                'active' => !$platform->active,
+            ]);
+        }
     }
 
-    public function render()
+    /**
+     * Render the component.
+     */
+    public function render(): View
     {
-        $platforms = Platform::all();
-        return view('livewire.dashboard.platforms-overview', compact('platforms'));
+        return view('livewire.dashboard.platforms-overview', [
+            'platforms' => Platform::all(),
+        ]);
     }
 }

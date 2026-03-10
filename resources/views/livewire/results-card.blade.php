@@ -6,7 +6,7 @@
 
     <a href="{{ $deal->url }}" target="_blank"
         class="absolute flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full cursor-pointer top-4 right-4">
-        <img src="{{ asset('platforms/' . $deal->platforms->name . '.png') }}" alt="{{ $deal->platforms->name }}"
+        <img src="{{ asset('platforms/' . $deal->platform->name . '.png') }}" alt="{{ $deal->platform->name }}"
             class="w-6 h-6 p-1" />
     </a>
 
@@ -19,7 +19,9 @@
             <h3 class="text-lg font-extrabold text-gray-800 line-clamp-2 dark:text-white">
                 {{ htmlspecialchars_decode($deal->title) }}
             </h3>
-            <p class="mt-2 text-sm text-gray-600 line-clamp-3 dark:text-white">{{ htmlspecialchars_decode($deal->subtitle) }}</p>
+            <p class="mt-2 text-sm text-gray-600 line-clamp-3 dark:text-white">
+                {{ htmlspecialchars_decode($deal->subtitle) }}
+            </p>
         </div>
 
         <div class="mt-auto">

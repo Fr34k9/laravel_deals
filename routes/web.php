@@ -1,7 +1,8 @@
 <?php
 
-use App\Models\Platform;
 use App\Http\Controllers\ProfileController;
+use App\Models\Platform;
+use App\Services\CrawlerFactory;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -17,21 +18,26 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('crawl/{crawler}', function ($crawler) {
-        if( is_numeric($crawler) ) {
-            $platform = Platform::find($crawler);
-            if (!$platform) {
-                dd('Invalid ID');
-            }
-            $crawler = $platform->name;
+    Route::get('crawl/{platform}', function ($identifier, CrawlerFactory $factory) {
+        $platform = is_numeric($identifier)
+            ? Platform::find($identifier)
+            : Platform::where('name', $identifier)->first();
+
+        if (! $platform) {
+            abort(404, 'Platform not found');
         }
 
-        $crawler = str_replace('20min', 'twentymin', $crawler);
-        $crawler = 'App\Crawlers\\' . ucfirst($crawler);
-        if(!class_exists($crawler)) {
-            dd('Crawler not found');
+        try {
+            $crawler = $factory->make($platform);
+            $deals = $crawler->crawlDeals();
+            $crawler->store($deals);
+
+            $platform->update(['last_crawled' => now()]);
+
+            return "Crawled {$platform->name} successfully. Found ".count($deals).' deals.';
+        } catch (Throwable $e) {
+            return "Error crawling {$platform->name}: ".$e->getMessage();
         }
-        new $crawler();
     });
 });
 

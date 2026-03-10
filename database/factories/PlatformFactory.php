@@ -1,14 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
+use App\Models\Platform;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Platform>
+ * @extends Factory<\App\Models\Platform>
  */
 class PlatformFactory extends Factory
 {
+    protected $model = Platform::class;
+
     /**
      * Define the model's default state.
      *
@@ -18,8 +23,9 @@ class PlatformFactory extends Factory
     {
         return [
             'name' => $this->faker->company(),
-            'url' => $this->faker->url,
-            'image' => $this->faker->imageUrl(),
+            'url' => $this->faker->url(),
+            'active' => true,
+            'last_crawled' => null,
         ];
     }
 }
