@@ -1,32 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Crawlers;
+
+use App\Contracts\CrawlerInterface;
 use App\Models\Deal;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Str;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
-abstract class BaseCrawler
+abstract class BaseCrawler implements CrawlerInterface
 {
-    protected $client;
-    public $config;
-    private $debug = false;
+    protected Client $client;
+    public object $config;
+    protected bool $debug = false;
 
-    public function __construct($config = null)
+    public function __construct(?array $config = null)
     {
         $this->client = new Client();
-        $this->config = (object) $config;
+        $this->config = (object) ($config ?? []);
 
-        if (App::runningInConsole()) {
-            $this->debug = false;
-        } else {
-            $this->debug = true;
-        }
+        $this->debug = function_exists('app') && app()->resolved('app') && !app()->runningInConsole();
     }
 
-    // abstract public function crawlDeals();
-
-    protected function crawl($url, $headers = [])
+    /**
+     * @param string $url
+     * @param array<string, string> $headers
+     * @return string
+     */
+    protected function crawl(string $url, array $headers = []): string
     {
         $options = $this->use_proxy();
         if (!empty($headers)) {
@@ -36,46 +40,58 @@ abstract class BaseCrawler
         $response = $this->client->request('GET', $url, $options);
         $content = $response->getBody()->getContents();
 
-        return \Str::between($content, '<body>', '</body>');
+        return Str::between($content, '<body>', '</body>');
     }
 
-    private function use_proxy()
+    /**
+     * @return array<string, mixed>
+     */
+    private function use_proxy(): array
     {
         if (isset($this->config->use_proxy) && !$this->config->use_proxy) {
             return [];
         }
 
-        if (!empty(env('PROXY_URL'))) {
-            if ($this->debug)
+        $proxyUrl = config('services.proxy.url') ?? env('PROXY_URL');
+        if (!empty($proxyUrl)) {
+            if ($this->debug) {
                 dump("Using proxy");
+            }
             return [
-                'proxy' => env('PROXY_URL'),
+                'proxy' => $proxyUrl,
             ];
         }
+
         return [];
     }
 
-    protected function prepare_store($urls)
+    /**
+     * @param array<string, array<int, array<string, mixed>>> $urls
+     * @return array<string, array<int, array<string, mixed>>>
+     */
+    protected function prepare_store(array $urls): array
     {
         $res = [];
         foreach ($urls as $url => $deals) {
             foreach ($deals as $deal) {
                 $tmp = [];
-                if (isset($deal['valid']) && empty($deal['valid']))
+                if (isset($deal['valid']) && empty($deal['valid'])) {
                     continue;
-                if (isset($deal['invalid']) && !empty($deal['invalid']))
+                }
+                if (isset($deal['invalid']) && !empty($deal['invalid'])) {
                     $deal['products_left'] = 0;
+                }
 
                 $deal_url = isset($deal['url']) && filter_var($deal['url'], FILTER_VALIDATE_URL) ? $deal['url'] : $url;
 
-                $tmp['platforms_id'] = $this->config->id;
-                $tmp['title'] = $this->clean($deal['title']);
-                $tmp['subtitle'] = $this->clean($deal['subtitle']);
-                $tmp['price'] = $this->clean_price($deal['price']);
-                $tmp['else_price'] = $this->clean_price($deal['else_price']);
-                $tmp['products_total'] = $this->clean_product_count_total($deal['products_total']);
-                $tmp['products_left'] = $this->clean_product_count_left($deal['products_left']);
-                $tmp['image'] = $this->image_prefix() . $this->clean($deal['image']);
+                $tmp['platform_id'] = $this->config->id ?? null;
+                $tmp['title'] = $this->clean($deal['title'] ?? '');
+                $tmp['subtitle'] = $this->clean($deal['subtitle'] ?? '');
+                $tmp['price'] = $this->clean_price($deal['price'] ?? '0');
+                $tmp['else_price'] = $this->clean_price($deal['else_price'] ?? '0');
+                $tmp['products_total'] = $this->clean_product_count_total($deal['products_total'] ?? '100');
+                $tmp['products_left'] = $this->clean_product_count_left($deal['products_left'] ?? '100');
+                $tmp['image'] = $this->image_prefix() . $this->clean($deal['image'] ?? '');
                 $tmp['url'] = $deal_url;
                 $tmp['updated_at'] = now();
                 $res[$url][] = $tmp;
@@ -85,98 +101,104 @@ abstract class BaseCrawler
         return $res;
     }
 
-    public function image_prefix()
+    public function image_prefix(): string
     {
         return '';
     }
 
-    public function clean_price($string)
+    public function clean_price(string|float|int $string): float
     {
-        // convert 1&#039;599.–to 1599.00
-        $string = str_replace('&#039;', '', $string);
+        if (is_float($string) || is_int($string)) {
+            return (float) $string;
+        }
 
-        $string = str_replace('\'', '', $string);
-        $string = str_replace('CHF', '', $string);
-
-        $int = floatval($string);
-
-        return $int;
+        $string = str_replace(['&#039;', '\'', 'CHF'], '', $string);
+        return (float) filter_var($string, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
     }
 
-    private function clean_product_count_total($string)
+    private function clean_product_count_total(bool|string|int $string): int
     {
-        $count = preg_replace('/[^0-9]/', '', $string) ? preg_replace('/[^0-9]/', '', $string) : 100;
-        return intval($count);
+        $count = preg_replace('/[^0-9]/', '', (string) $string) ?: '100';
+        return (int) $count;
     }
 
-    private function clean_product_count_left($string)
+    private function clean_product_count_left(string|int $string): int
     {
-        if ($string === '0' || $string === 0)
+        if ($string === '0' || $string === 0) {
             return 0;
+        }
 
-        $count = preg_replace('/[^0-9]/', '', $string) ? preg_replace('/[^0-9]/', '', $string) : 100;
-
-        return intval($count);
+        $count = preg_replace('/[^0-9]/', '', (string) $string) ?: '100';
+        return (int) $count;
     }
 
-    protected function store($urls)
+    public function store(array $dealsByUrl): void
     {
-        if ($this->debug)
-            dump("Data before preparing", $urls);
-        $urls = $this->prepare_store($urls);
-        if ($this->debug)
-            dump("Data before storing", $urls);
+        if ($this->debug) {
+            dump("Data before preparing", $dealsByUrl);
+        }
+        $preparedDealsByUrl = $this->prepare_store($dealsByUrl);
+        if ($this->debug) {
+            dump("Data before storing", $preparedDealsByUrl);
+        }
 
-        foreach ($urls as $deals) {
+        foreach ($preparedDealsByUrl as $deals) {
             foreach ($deals as $deal) {
+                /** @var Deal|null $existing_deal */
                 $existing_deal = Deal::where('title', $deal['title'])
                     ->where('updated_at', '>', now()->subDay())
-                    ->where('platforms_id', $deal['platforms_id'])
+                    ->where('platform_id', $deal['platform_id'])
                     ->first();
 
                 if ($existing_deal) {
-                    if ($this->debug)
+                    if ($this->debug) {
                         dump("Updating deal " . $deal['title']);
+                    }
                     $existing_deal->update($deal);
                 } else {
-                    if ($this->debug)
+                    if ($this->debug) {
                         dump("Creating deal " . $deal['title']);
+                    }
                     $new_deal = Deal::create($deal);
                     if ($new_deal) {
                         $this->sendDiscordMessage($new_deal);
                     }
                 }
 
-                if ($this->debug)
+                if ($this->debug) {
                     dump($deal);
+                }
             }
         }
     }
 
-    protected function searchRegex($string, $regex)
+    protected function searchRegex(string $string, ?string $regex): string|bool
     {
-        if (empty($regex))
+        if (empty($regex)) {
             return false;
+        }
 
         preg_match($regex, $string, $matches);
         return $matches[1] ?? false;
     }
 
-    protected function clean($string)
+    protected function clean(string $string): string
     {
         return trim(preg_replace('/\s+/', ' ', $string));
     }
 
-    protected function crawlDeals()
+    public function crawlDeals(): array
     {
         $deals = [];
-        foreach ($this->config->urls as $url) {
-            if ($this->debug)
+        $urls = $this->config->urls ?? [];
+        foreach ($urls as $url) {
+            if ($this->debug) {
                 dump("Crawling " . $url);
+            }
             $headers = $this->config->headers ?? [];
             $body = $this->crawl($url, $headers);
 
-            if ($this->config->multiple_products) {
+            if ($this->config->multiple_products ?? false) {
                 $deals[$url] = $this->crawlMultipleDeals($body);
             } else {
                 $deals[$url] = $this->crawlOneDeal($body);
@@ -187,27 +209,39 @@ abstract class BaseCrawler
         return $deals;
     }
 
-
-    protected function crawlOneDeal($html)
+    /**
+     * @param string $html
+     * @return array<int, array<string, mixed>>
+     */
+    protected function crawlOneDeal(string $html): array
     {
-        $deals = [];
         $deal = [];
-        foreach ($this->config->regex as $key => $regex) {
+        $regexes = $this->config->regex ?? [];
+        foreach ($regexes as $key => $regex) {
             $deal[$key] = $this->searchRegex($html, $regex);
         }
-        $deals[] = $deal;
 
-        return $deals;
+        return [$deal];
     }
 
-    protected function crawlMultipleDeals($html)
+    /**
+     * @param string $html
+     * @return array<int, array<string, mixed>>
+     */
+    protected function crawlMultipleDeals(string $html): array
     {
-        preg_match_all($this->config->multiple_products, $html, $matches);
+        $multipleProductsRegex = $this->config->multiple_products ?? null;
+        if (!$multipleProductsRegex) {
+            return [];
+        }
+
+        preg_match_all($multipleProductsRegex, $html, $matches);
 
         $deals = [];
         foreach ($matches[1] as $deal_html) {
             $deal = [];
-            foreach ($this->config->regex as $key => $regex) {
+            $regexes = $this->config->regex ?? [];
+            foreach ($regexes as $key => $regex) {
                 $deal[$key] = $this->searchRegex($deal_html, $regex);
             }
             $deals[] = $deal;
@@ -216,41 +250,42 @@ abstract class BaseCrawler
         return $deals;
     }
 
-    private function sendDiscordMessage($deal)
+    private function sendDiscordMessage(Deal $deal): void
     {
         if (empty(env('DISCORD_ALERT_WEBHOOK'))) {
             return;
         }
 
-        if ($this->debug)
-            dump("Sending Discord message for deal " . $deal['title']);
-
-        $discordPriceString = "**" . $deal['price'] . ".-** ";
-        if (!empty($deal['products_left']) && $deal['else_price'] > 0) {
-            $discordPriceString .= " / ~~" . $deal['else_price'] . ".-~~";
+        if ($this->debug) {
+            dump("Sending Discord message for deal " . $deal->title);
         }
 
-        $discordDescription = $discordPriceString . "\n[Alle Deals](" . env('APP_URL', "https://deals.fr34k.ch/") . ")";
+        $discordPriceString = "**" . $deal->price . ".-** ";
+        if ($deal->products_left > 0 && $deal->else_price > 0) {
+            $discordPriceString .= " / ~~" . $deal->else_price . ".-~~";
+        }
+
+        $appUrl = config('app.url', "https://deals.fr34k.ch/");
+        $discordDescription = $discordPriceString . "\n[Alle Deals](" . $appUrl . ")";
 
         $discordImage = null;
-        if (!empty($deal['image'])) {
+        if (!empty($deal->image)) {
             $discordImage = [
-                'url' => $deal['image']
+                'url' => $deal->image
             ];
         }
 
         DiscordAlert::message("", [
             [
-                'title' => $deal['subtitle'] ?? '',
+                'title' => $deal->subtitle ?? '',
                 'description' => $discordDescription,
                 "image" => $discordImage,
                 'color' => rand(0, 1) ? '#ef5350' : '#409fff',
                 'author' => [
-                    'name' => $deal['title'] ?? '',
-                    'url' => $deal['url'] ?? env('APP_URL', "https://deals.fr34k.ch/"),
+                    'name' => $deal->title ?? '',
+                    'url' => $deal->url ?? $appUrl,
                 ],
             ]
         ]);
-        die();
     }
 }

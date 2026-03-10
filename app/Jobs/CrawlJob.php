@@ -1,54 +1,54 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
 use App\Models\Platform;
+use App\Services\CrawlerFactory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class CrawlJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $platform;
     /**
      * Create a new job instance.
      */
-    public function __construct(Platform $platform)
-    {
-        $this->platform = $platform;
-    }
+    public function __construct(
+        public Platform $platform
+    ) {}
 
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(CrawlerFactory $factory): void
     {
-        $crawler = isset( $this->platform->name ) ? $this->platform->name : false;
-        if(!$crawler) {
-            throw new \Exception('Crawler not found');
-        }
+        Log::info("Job for Crawler {$this->platform->name} started");
 
-        $crawler = str_replace('20min', 'twentymin', $crawler);
-        $crawler_class = 'App\Crawlers\\' . ucfirst($crawler);
-        if(!class_exists($crawler_class)) {
-            throw new \Exception('Crawler not found');
-        }
-
-        Log::info('Job for Crawler ' . $crawler . ' started');
         try {
-            new $crawler_class();
-        } catch (\Exception $e) {
-            Log::error('Error in Crawler ' . $crawler . ': ' . $e->getMessage());
+            $crawler = $factory->make($this->platform);
+            
+            $deals = $crawler->crawlDeals();
+            $crawler->store($deals);
+
+            $this->platform->update([
+                'last_crawled' => now(),
+            ]);
+
+            Log::info("Job for Crawler {$this->platform->name} finished");
+        } catch (Throwable $e) {
+            Log::error("Error in Crawler {$this->platform->name}: {$e->getMessage()}", [
+                'exception' => $e,
+            ]);
+            
+            throw $e;
         }
-
-        $this->platform->last_crawled = now();
-        $this->platform->save();
-
-        Log::info('Job for Crawler ' . $crawler . ' finished');
     }
 }

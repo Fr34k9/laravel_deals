@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Jobs\CrawlJob;
@@ -26,44 +28,47 @@ class Crawl extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
-        $platform = $this->argument('platform');
-        if ($platform) {
-            if (is_numeric($platform)) {
-                $this->startCrawlerById($platform);
-            } else {
-                $this->startCrawlerByName($platform);
-            }
-        } else {
-            $this->startAllCrawlers();
+        $platformArgument = $this->argument('platform');
+
+        if ($platformArgument) {
+            $this->startCrawlerFor($platformArgument);
+            return self::SUCCESS;
         }
+
+        $this->startAllCrawlers();
+        
+        return self::SUCCESS;
     }
 
-    private function startCrawlerById($id)
+    private function startCrawlerFor(string|int $identifier): void
     {
-        $platform = Platform::find($id);
+        $platform = is_numeric($identifier)
+            ? Platform::find($identifier)
+            : Platform::where('name', $identifier)->first();
+
         if (!$platform) {
-            Log::error('Invalid ID');
+            $this->error("Platform not found: {$identifier}");
+            Log::error("Crawler command failed: Platform not found: {$identifier}");
             return;
         }
 
+        $this->info("Dispatching crawl job for {$platform->name}");
         CrawlJob::dispatch($platform);
     }
 
-    private function startCrawlerByName($name)
+    private function startAllCrawlers(): void
     {
-        $platform = Platform::where('name', $name)->first();
-        if (!$platform) {
-            Log::error('Invalid name');
+        $platforms = Platform::active()->get();
+
+        if ($platforms->isEmpty()) {
+            $this->warn('No active platforms found to crawl.');
             return;
         }
-        CrawlJob::dispatch($platform);
-    }
 
-    private function startAllCrawlers()
-    {
-        $platforms = Platform::where('active', true)->get();
+        $this->info("Dispatching crawl jobs for {$platforms->count()} platforms...");
+
         foreach ($platforms as $platform) {
             CrawlJob::dispatch($platform);
         }

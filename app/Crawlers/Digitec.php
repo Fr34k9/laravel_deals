@@ -1,55 +1,64 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Crawlers;
 
 class Digitec extends BaseCrawler
 {
-
-    public function __construct()
+    public function __construct(?array $config = null)
     {
-        $urls = [
-            'https://www.digitec.ch/de/daily-deal',
-        ];
-
-        $config = [
+        $config = array_merge([
             'id' => 4,
-            'urls' => $urls,
-            'multiple_products' => true, // if the page has multiple products
-        ];
+            'urls' => [
+                'https://www.digitec.ch/de/daily-deal',
+            ],
+            'multiple_products' => true,
+        ], $config ?? []);
 
         parent::__construct($config);
-        $deals = $this->crawlDeals();
-        $this->store($deals);
     }
 
-    public function crawlMultipleDeals($html)
+    /**
+     * @param string $html
+     * @return array<int, array<string, mixed>>
+     */
+    protected function crawlMultipleDeals(string $html): array
     {
         preg_match('/<script id="__NEXT_DATA__" type="application\/json" [^>]*>(.*?)<\/script>/s', $html, $matches);
         $json = $matches[1] ?? null;
-        if (!$json)
+        if (!$json) {
             return [];
+        }
 
         $response = json_decode($json, true);
-        $datas = $response['props']['pageProps']['preloadedQuery']['rawResponse']['data']['dailyDealProducts'];
+        $dailyDealProducts = $response['props']['pageProps']['preloadedQuery']['rawResponse']['data']['dailyDealProducts'] ?? [];
 
         $deals = [];
-        foreach ($datas as $data) {
-            $data = $data['product'];
-            $products_left = intval($data['salesInformation']['numberOfItems']) - intval($data['salesInformation']['numberOfItemsSold']);
-            if ($products_left <= 0)
+        foreach ($dailyDealProducts as $item) {
+            $data = $item['product'] ?? null;
+            if (!$data) {
                 continue;
+            }
 
-            $deal = [];
-            $deal['identifier'] = $data['databaseId'];
-            $deal['title'] = $data['brand']['name'] . ' ' . $data['name'];
-            $deal['subtitle'] = $data['nameExtensions']['properties'] ?? '';
-            $deal['price'] = $data['price']['amountInclusive'] ?? 0;
-            $deal['else_price'] = $data['insteadOfPrice']['price']['amountInclusive'] ?? 0;
-            $deal['products_total'] = $data['salesInformation']['numberOfItems'] ?? 100;
-            $deal['products_left'] = $products_left ?? 100;
-            $deal['image'] = 'https://static01.galaxus.com/' . $data['previewImages']['nodes'][0]['relativeUrl'] . '_720.avif';
-            $deal['url'] = "https://www.galaxus.ch/" . $data['relativeUrl'];
-            $deals[] = $deal;
+            $productsTotal = (int) ($data['salesInformation']['numberOfItems'] ?? 100);
+            $productsSold = (int) ($data['salesInformation']['numberOfItemsSold'] ?? 0);
+            $productsLeft = $productsTotal - $productsSold;
+
+            if ($productsLeft <= 0) {
+                continue;
+            }
+
+            $deals[] = [
+                'title' => ($data['brand']['name'] ?? '') . ' ' . ($data['name'] ?? ''),
+                'subtitle' => $data['nameExtensions']['properties'] ?? '',
+                'price' => (float) ($data['price']['amountInclusive'] ?? 0),
+                'else_price' => (float) ($data['insteadOfPrice']['price']['amountInclusive'] ?? 0),
+                'products_total' => $productsTotal,
+                'products_left' => $productsLeft,
+                'image' => 'https://static01.galaxus.com/' . ($data['previewImages']['nodes'][0]['relativeUrl'] ?? '') . '_720.avif',
+                'url' => "https://www.galaxus.ch/" . ($data['relativeUrl'] ?? ''),
+            ];
         }
 
         return $deals;
