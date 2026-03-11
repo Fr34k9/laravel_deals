@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Crawlers;
 
+use App\Data\DealData;
+
 class Qoqa extends BaseCrawler
 {
     public function __construct(?array $config = null)
@@ -21,7 +23,7 @@ class Qoqa extends BaseCrawler
 
     /**
      * @param string $html
-     * @return array<int, array<string, mixed>>
+     * @return DealData[]
      */
     protected function crawlMultipleDeals(string $html): array
     {
@@ -40,16 +42,17 @@ class Qoqa extends BaseCrawler
             }
 
             foreach ($category->offers as $offer) {
-                $deals[] = [
-                    'title' => $offer->title ?? '',
-                    'subtitle' => $offer->subtitle ?? '',
-                    'price' => $this->clean_price($offer->offer_price_text ?? '0'),
-                    'else_price' => $this->clean_price($offer->best_price_text ?? '0'),
-                    'products_total' => 100,
-                    'products_left' => $offer->remaining_stock_percent ?? 100,
-                    'image' => $offer->image_urls->standard->url ?? '',
-                    'url' => $offer->url ?? '',
-                ];
+                $deals[] = new DealData(
+                    platform_id: $this->config->id ?? null,
+                    title: $offer->title ?? '',
+                    subtitle: $offer->subtitle ?? '',
+                    price: $this->clean_price($offer->offer_price_text ?? '0'),
+                    else_price: $this->clean_price($offer->best_price_text ?? '0'),
+                    products_total: 100,
+                    products_left: $offer->remaining_stock_percent ?? 100,
+                    image: $offer->image_urls->standard->url ?? '',
+                    url: $offer->url ?? '',
+                );
             }
         }
 
@@ -62,7 +65,7 @@ class Qoqa extends BaseCrawler
             return (float) $price;
         }
 
-        $price = str_replace(['’', '.-', '.–'], '', $price);
+        $price = str_replace(["\u{2019}", '.-', '.–'], '', $price);
 
         // Convert "Ab 52.– bis 169.-" to 169.00
         if (str_contains($price, 'bis')) {
