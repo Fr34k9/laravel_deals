@@ -7,6 +7,7 @@ namespace App\Crawlers;
 use App\Contracts\CrawlerInterface;
 use App\Models\Deal;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
@@ -14,6 +15,7 @@ abstract class BaseCrawler implements CrawlerInterface
 {
     public object $config;
     protected bool $debug = false;
+    protected int $retries = 1;
 
     public function __construct(?array $config = null)
     {
@@ -193,7 +195,25 @@ abstract class BaseCrawler implements CrawlerInterface
                 dump("Crawling " . $url);
             }
             $headers = $this->config->headers ?? [];
-            $body = $this->crawl($url, $headers);
+
+            $body = null;
+            for ($attempt = 0; $attempt <= $this->retries; $attempt++) {
+                try {
+                    $body = $this->crawl($url, $headers);
+                    break;
+                } catch (\Exception $e) {
+                    if ($attempt < $this->retries) {
+                        Log::warning("Crawl attempt " . ($attempt + 1) . " failed for {$url}: " . $e->getMessage() . ". Retrying...");
+                        sleep(2);
+                    } else {
+                        Log::error("Crawl failed after " . ($attempt + 1) . " attempts for {$url}: " . $e->getMessage());
+                    }
+                }
+            }
+
+            if ($body === null) {
+                continue;
+            }
 
             if ($this->config->multiple_products ?? false) {
                 $deals[$url] = $this->crawlMultipleDeals($body);
