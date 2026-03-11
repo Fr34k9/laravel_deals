@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Crawlers;
 
 use App\Contracts\CrawlerInterface;
+use App\Data\DealData;
 use App\Models\Deal;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -65,35 +66,46 @@ abstract class BaseCrawler implements CrawlerInterface
     }
 
     /**
-     * @param array<string, array<int, array<string, mixed>>> $urls
-     * @return array<string, array<int, array<string, mixed>>>
+     * Prepare crawled deals into DealData objects, applying cleaning and validation.
+     * Deals that are already DealData instances are passed through with platform_id set.
+     * Raw arrays from regex-based crawlers go through the full cleaning/conversion path.
+     *
+     * @param array<string, list<DealData|array<string, mixed>>> $urls
+     * @return array<string, DealData[]>
      */
     protected function prepare_store(array $urls): array
     {
         $res = [];
         foreach ($urls as $url => $deals) {
             foreach ($deals as $deal) {
-                $tmp = [];
+                // Already a DealData instance (from child crawlers with custom parsing)
+                if ($deal instanceof DealData) {
+                    $res[$url][] = $deal;
+                    continue;
+                }
+
                 if (isset($deal['valid']) && empty($deal['valid'])) {
                     continue;
                 }
+
+                $productsLeft = $this->clean_product_count_left($deal['products_left'] ?? '100');
                 if (isset($deal['invalid']) && !empty($deal['invalid'])) {
-                    $deal['products_left'] = 0;
+                    $productsLeft = 0;
                 }
 
                 $deal_url = isset($deal['url']) && filter_var($deal['url'], FILTER_VALIDATE_URL) ? $deal['url'] : $url;
 
-                $tmp['platform_id'] = $this->config->id ?? null;
-                $tmp['title'] = $this->clean($deal['title'] ?? '');
-                $tmp['subtitle'] = $this->clean($deal['subtitle'] ?? '');
-                $tmp['price'] = $this->clean_price($deal['price'] ?? '0');
-                $tmp['else_price'] = $this->clean_price($deal['else_price'] ?? '0');
-                $tmp['products_total'] = $this->clean_product_count_total($deal['products_total'] ?? '100');
-                $tmp['products_left'] = $this->clean_product_count_left($deal['products_left'] ?? '100');
-                $tmp['image'] = $this->image_prefix() . $this->clean($deal['image'] ?? '');
-                $tmp['url'] = $deal_url;
-                $tmp['updated_at'] = now();
-                $res[$url][] = $tmp;
+                $res[$url][] = new DealData(
+                    platform_id: $this->config->id ?? null,
+                    title: $this->clean($deal['title'] ?? ''),
+                    subtitle: $this->clean($deal['subtitle'] ?? ''),
+                    price: $this->clean_price($deal['price'] ?? '0'),
+                    else_price: $this->clean_price($deal['else_price'] ?? '0'),
+                    products_total: $this->clean_product_count_total($deal['products_total'] ?? '100'),
+                    products_left: $productsLeft,
+                    image: $this->image_prefix() . $this->clean($deal['image'] ?? ''),
+                    url: $deal_url,
+                );
             }
         }
 
@@ -121,7 +133,7 @@ abstract class BaseCrawler implements CrawlerInterface
         return (int) $count;
     }
 
-    private function clean_product_count_left(string|int $string): int
+    private function clean_product_count_left(bool|string|int $string): int
     {
         if ($string === '0' || $string === 0) {
             return 0;
@@ -131,6 +143,9 @@ abstract class BaseCrawler implements CrawlerInterface
         return (int) $count;
     }
 
+    /**
+     * @param array<string, DealData[]> $dealsByUrl
+     */
     public function store(array $dealsByUrl): void
     {
         if ($this->debug) {
@@ -142,30 +157,33 @@ abstract class BaseCrawler implements CrawlerInterface
         }
 
         foreach ($preparedDealsByUrl as $deals) {
-            foreach ($deals as $deal) {
+            foreach ($deals as $dealData) {
+                $attributes = $dealData->toArray();
+                $attributes['updated_at'] = now();
+
                 /** @var Deal|null $existing_deal */
-                $existing_deal = Deal::where('title', $deal['title'])
+                $existing_deal = Deal::where('title', $dealData->title)
                     ->where('updated_at', '>', now()->subDay())
-                    ->where('platform_id', $deal['platform_id'])
+                    ->where('platform_id', $dealData->platform_id)
                     ->first();
 
                 if ($existing_deal) {
                     if ($this->debug) {
-                        dump("Updating deal " . $deal['title']);
+                        dump("Updating deal " . $dealData->title);
                     }
-                    $existing_deal->update($deal);
+                    $existing_deal->update($attributes);
                 } else {
                     if ($this->debug) {
-                        dump("Creating deal " . $deal['title']);
+                        dump("Creating deal " . $dealData->title);
                     }
-                    $new_deal = Deal::create($deal);
+                    $new_deal = Deal::create($attributes);
                     if ($new_deal) {
                         $this->sendDiscordMessage($new_deal);
                     }
                 }
 
                 if ($this->debug) {
-                    dump($deal);
+                    dump($dealData);
                 }
             }
         }
@@ -186,6 +204,9 @@ abstract class BaseCrawler implements CrawlerInterface
         return trim(preg_replace('/\s+/', ' ', $string));
     }
 
+    /**
+     * @return array<string, array<int, array<string, mixed>>>
+     */
     public function crawlDeals(): array
     {
         $deals = [];

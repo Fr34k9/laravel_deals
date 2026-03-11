@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Crawlers;
 
+use App\Data\DealData;
+
 class Twentymin extends BaseCrawler
 {
     public function __construct(?array $config = null)
@@ -27,7 +29,7 @@ class Twentymin extends BaseCrawler
 
     /**
      * @param string $html
-     * @return array<int, array<string, mixed>>
+     * @return DealData[]
      */
     protected function crawlMultipleDeals(string $html): array
     {
@@ -36,17 +38,20 @@ class Twentymin extends BaseCrawler
 
         $deals = [];
         foreach ($elements as $element) {
-            $deals[] = [
-                'title' => $element['title'] ?? '',
-                'subtitle' => $element['homeDescription'] ?? '',
-                'price' => isset($element['price']) ? $element['price'] / 100 : 0,
-                'else_price' => isset($element['originalPrice']) ? $element['originalPrice'] / 100 : 0,
-                'products_total' => 100,
-                'products_left' => $element['remainingStockPercent'] ?? 100,
-                'image' => $element['coverPhotoPath'] ?? '',
-                'url' => 'https://myshop.20min.ch' . ($element['forthLink'] ?? ''),
-                'invalid' => $element['isSoldOut'] ?? false,
-            ];
+            $isSoldOut = $element['isSoldOut'] ?? false;
+
+            $deals[] = new DealData(
+                platform_id: $this->config->id ?? null,
+                title: $element['title'] ?? '',
+                subtitle: $element['homeDescription'] ?? '',
+                price: isset($element['price']) ? $element['price'] / 100 : 0,
+                else_price: isset($element['originalPrice']) ? $element['originalPrice'] / 100 : 0,
+                products_total: 100,
+                products_left: $isSoldOut ? 0 : ($element['remainingStockPercent'] ?? 100),
+                image: $element['coverPhotoPath'] ?? '',
+                url: 'https://myshop.20min.ch' . ($element['forthLink'] ?? ''),
+                invalid: $isSoldOut,
+            );
         }
 
         return $deals;

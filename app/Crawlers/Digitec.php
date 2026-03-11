@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Crawlers;
 
+use App\Data\DealData;
+
 class Digitec extends BaseCrawler
 {
     public function __construct(?array $config = null)
@@ -21,7 +23,7 @@ class Digitec extends BaseCrawler
 
     /**
      * @param string $html
-     * @return array<int, array<string, mixed>>
+     * @return DealData[]
      */
     protected function crawlMultipleDeals(string $html): array
     {
@@ -49,16 +51,17 @@ class Digitec extends BaseCrawler
                 continue;
             }
 
-            $deals[] = [
-                'title' => ($data['brand']['name'] ?? '') . ' ' . ($data['name'] ?? ''),
-                'subtitle' => $data['nameExtensions']['properties'] ?? '',
-                'price' => (float) ($data['price']['amountInclusive'] ?? 0),
-                'else_price' => (float) ($data['insteadOfPrice']['price']['amountInclusive'] ?? 0),
-                'products_total' => $productsTotal,
-                'products_left' => $productsLeft,
-                'image' => 'https://static01.galaxus.com/' . ($data['previewImages']['nodes'][0]['relativeUrl'] ?? '') . '_720.avif',
-                'url' => "https://www.galaxus.ch/" . ($data['relativeUrl'] ?? ''),
-            ];
+            $deals[] = new DealData(
+                platform_id: $this->config->id ?? null,
+                title: ($data['brand']['name'] ?? '') . ' ' . ($data['name'] ?? ''),
+                subtitle: $data['nameExtensions']['properties'] ?? '',
+                price: (float) ($data['price']['amountInclusive'] ?? 0),
+                else_price: (float) ($data['insteadOfPrice']['price']['amountInclusive'] ?? 0),
+                products_total: $productsTotal,
+                products_left: $productsLeft,
+                image: 'https://static01.galaxus.com/' . ($data['previewImages']['nodes'][0]['relativeUrl'] ?? '') . '_720.avif',
+                url: "https://www.galaxus.ch/" . ($data['relativeUrl'] ?? ''),
+            );
         }
 
         return $deals;
